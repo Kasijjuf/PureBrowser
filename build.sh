@@ -68,6 +68,9 @@ echo "debian/https-everywhere-eff@eff.org usr/lib/purebrowser/browser/extensions
 echo "Adding html5-video-everywhere."
 echo "debian/html5-video-everywhere@lejenome.me usr/lib/purebrowser/browser/extensions/" >> debian/browser.install.in
 
+echo "Adding uBlock."
+echo "debian/uBlock0@raymondhill.net usr/lib/purebrowser/browser/extensions/" >> debian/browser.install.in
+
 # disable search field in extensions panel
 echo "Disable search in extensions panel."
 cat << EOF >> toolkit/mozapps/extensions/content/extensions.css
