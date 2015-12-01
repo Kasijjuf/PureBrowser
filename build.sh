@@ -156,7 +156,7 @@ EOF
 dch -a "Disable navigator beacon for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
-// https://developer.mozilla.org/en-US/docs/Mozilla/Preferences/Preference_reference/dom.event.clipboardevents.enabled
+// https://developer.mozilla.org/en-US/docs/Mozilla/preferences/preference_reference/dom.event.clipboardevents.enabled
 pref("dom.event.clipboardevents.enabled",               false);
 EOF
 dch -a "Disable clipboard events for internal IP leak."
@@ -173,6 +173,13 @@ cat << EOF >>debian/vendor.js.in
 pref("media.getusermedia.screensharing.enabled",                false);
 EOF
 dch -a "Disable getUserMedia screen sharing."
+
+cat <<EOF >>debian/vendor.js.in
+// Disable sensor API
+// https://wiki.mozilla.org/Sensor_API
+pref("device.sensors.enabled",          false);
+EOF
+dch -a "Disable sensor API."
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
