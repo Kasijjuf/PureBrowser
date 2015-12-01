@@ -206,6 +206,11 @@ creativecommons
 wikipedia
 EOF
 
+cat << EOF >>debian/vendor.js.in
+// DDG as default search engine
+defaultPref("browser.search.defaultenginename",              "DuckDuckGo");
+EOF
+
 # patches
 for patchfile in $(ls "$basedir"/data/patches/)
 do
@@ -215,7 +220,7 @@ done
 cat << EOF >> browser/confvars.sh
 # PureBrowser settings
 MOZ_APP_VENDOR=PURISM
-MOZ_APP_VERSION=38.2.1esr+pureos1
+MOZ_APP_VERSION=38.4esr-1
 MOZ_APP_PROFILE=mozilla/purebrowser
 MOZ_PAY=0
 MOZ_SERVICES_HEALTHREPORT=0
