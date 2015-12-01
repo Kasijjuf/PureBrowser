@@ -174,12 +174,19 @@ pref("media.getusermedia.screensharing.enabled",                false);
 EOF
 dch -a "Disable getUserMedia screen sharing."
 
-cat <<EOF >>debian/vendor.js.in
+cat << EOF >>debian/vendor.js.in
 // Disable sensor API
 // https://wiki.mozilla.org/Sensor_API
 pref("device.sensors.enabled",          false);
 EOF
 dch -a "Disable sensor API."
+
+cat << EOF >>debian/vendor.js.in
+// Disable browser pings
+// http://kb.mozillazine.org/Browser.send_pings
+pref("browser.send_pings",              false);
+EOF
+dch -a "Disable browser pings."
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
