@@ -188,6 +188,12 @@ pref("browser.send_pings",              false);
 EOF
 dch -a "Disable browser pings."
 
+cat << EOF >>debian/vendor.js.in
+// Disable web notifications
+pref("dom.webnotifications.enabled",            false);
+EOF
+dch -a "Disable web nofitications."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
