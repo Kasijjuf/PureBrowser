@@ -8,5 +8,9 @@
 <Url type="text/html" method="GET" template="https://duckduckgo.com/html">
   <Param name="q" value="{searchTerms}"/>
   <Param name="t" value="gnu"/>
-</Url>  
+</Url> 
+<SearchForm>https://duckduckgo.com</SearchForm>
+
+
+ 
 </OpenSearchDescription>

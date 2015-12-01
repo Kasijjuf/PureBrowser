@@ -7,5 +7,5 @@
   <Param name="q" value="{searchTerms}"/>
   <Param name="sourceid" value="Mozilla-search"/>
 </Url>
-<SearchForm>http://search.creativecommons.org/</SearchForm>
+/******************** <SearchForm>http://search.creativecommons.org/</SearchForm> *********************/
 </SearchPlugin>
