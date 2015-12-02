@@ -223,6 +223,11 @@ dch -a "Disable OpenH264 codec."
 cat << EOF >>debian/vendor.js.in
 // https://wiki.mozilla.org/Security/Reviews/Firefox6/ReviewNotes/telemetry
 lockPref("toolkit.telemetry.enabled",               false);
+// https://gecko.readthedocs.org/en/latest/toolkit/components/telemetry/telemetry/preferences.html
+lockPref("toolkit.telemetry.unified",               false);
+// https://wiki.mozilla.org/Telemetry/Experiments
+lockPref("experiments.supported",           false);
+lockPref("experiments.enabled",             false);
 EOF
 dch -a "Disable telemetry."
 
