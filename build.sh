@@ -280,6 +280,16 @@ lockPref("security.ssl3.dhe_dss_camellia_256_sha",          false);
 EOF
 dch -a "Disable DSA ciphers."
 
+cat << EOF >>debian/vendor.js.in
+lockPref("security.ssl3.rsa_null_sha",              false);
+lockPref("security.ssl3.rsa_null_md5",              false);
+lockPref("security.ssl3.ecdhe_rsa_null_sha",                false);
+lockPref("security.ssl3.ecdhe_ecdsa_null_sha",              false);
+lockPref("security.ssl3.ecdh_rsa_null_sha",         false);
+lockPref("security.ssl3.ecdh_ecdsa_null_sha",               false);
+EOF
+dch -a "Disable null ciphers."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
