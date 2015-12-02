@@ -272,6 +272,14 @@ lockPref("security.ssl3.dhe_rsa_aes_256_sha",               false);
 EOF
 dch -a "Stop logjamming attacks."
 
+cat << EOF >>debian/vendor.js.in
+lockPref("security.ssl3.dhe_dss_aes_128_sha",               false);
+lockPref("security.ssl3.dhe_dss_aes_256_sha",               false);
+lockPref("security.ssl3.dhe_dss_camellia_128_sha",          false);
+lockPref("security.ssl3.dhe_dss_camellia_256_sha",          false);
+EOF
+dch -a "Disable DSA ciphers."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
