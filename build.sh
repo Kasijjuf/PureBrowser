@@ -185,8 +185,15 @@ cat << EOF >>debian/vendor.js.in
 // Disable browser pings
 // http://kb.mozillazine.org/Browser.send_pings
 lockPref("browser.send_pings",              false);
+// Disable health reporting
+// https://support.mozilla.org/en-US/kb/firefox-health-report-understand-your-browser-perf
+pref("datareporting.healthreport.uploadEnabled",                false);
+// disable collection of the data (the healthreport.sqlite* files)
+pref("datareporting.healthreport.service.enabled",              false);
+// https://gecko.readthedocs.org/en/latest/toolkit/components/telemetry/telemetry/preferences.html
+pref("datareporting.policy.dataSubmissionEnabled",              false);
 EOF
-dch -a "Disable browser pings."
+dch -a "Disable browser pings and health reports."
 
 cat << EOF >>debian/vendor.js.in
 // Disable web notifications
