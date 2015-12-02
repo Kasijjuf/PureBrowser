@@ -197,7 +197,7 @@ dch -a "Disable web nofitications."
 cat << EOF >>debian/vendor.js.in
 // Display an error message indicating the entered information is not a valid URL
 // http://kb.mozillazine.org/Keyword.enabled#Caveats
-locklockPref("keyword.enabled",         false);
+lockPref("keyword.enabled",         false);
 EOF
 dch -a "Display an error if URL is invalid."
 
@@ -210,15 +210,21 @@ dch -a "Disable domain guessing."
 
 cat << EOF >>debian/vendor.js.in
 // Never try to use flash
-locklockPref("plugin.state.flash",              0);
+lockPref("plugin.state.flash",              0);
 EOF
 dch -a "Don't try to use flash."
 
 cat << EOF >>debian/vendor.js.in
 // http://forums.mozillazine.org/viewtopic.php?p=13845077&sid=28af2622e8bd8497b9113851676846b1#p13845077
-pref("media.gmp-provider.enabled",            false);
+lockPref("media.gmp-provider.enabled",            false);
 EOF
-dch -a "Disable OpenH264 codec"
+dch -a "Disable OpenH264 codec."
+
+cat << EOF >>debian/vendor.js.in
+// https://wiki.mozilla.org/Security/Reviews/Firefox6/ReviewNotes/telemetry
+lockPref("toolkit.telemetry.enabled",               false);
+EOF
+dch -a "Disable telemetry."
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
