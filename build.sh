@@ -226,6 +226,12 @@ lockPref("toolkit.telemetry.enabled",               false);
 EOF
 dch -a "Disable telemetry."
 
+cat << EOF >>debian/vendor.js.in
+// https://blog.mozilla.org/addons/how-to-turn-off-add-on-updates/
+pref("extensions.update.enabled",               true);
+EOF
+dch -a "Enable automatic add-on updates."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
