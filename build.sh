@@ -209,6 +209,13 @@ pref("browser.fixup.alternate.enabled",         false);
 EOF
 dch -a "Disable domain guessing."
 
+cat << EOF >>debian/vendor.js.in
+// Never try to use flash
+pref("plugin.state.flash",              0);
+EOF
+dch -a "Don't try to use flash."
+
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
