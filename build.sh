@@ -253,6 +253,19 @@ lockPref("pdfjs.disabled",          true);
 EOF
 dch -a "Disable build-in PDF viewer."
 
+cat << EOF >>debian/vendor.js.in
+// Disable 3DES
+lockPref("security.ssl3.dhe_dss_des_ede3_sha",              false);
+lockPref("security.ssl3.dhe_rsa_des_ede3_sha",              false);
+lockPref("security.ssl3.ecdh_ecdsa_des_ede3_sha",           false);
+lockPref("security.ssl3.ecdh_rsa_des_ede3_sha",             false);
+lockPref("security.ssl3.ecdhe_ecdsa_des_ede3_sha",          false);
+lockPref("security.ssl3.ecdhe_rsa_des_ede3_sha",            false);
+lockPref("security.ssl3.rsa_des_ede3_sha",          false);
+lockPref("security.ssl3.rsa_fips_des_ede3_sha",             false);
+EOF
+dch -a "Disable 3DES; http://en.citizendium.org/wiki/Meet-in-the-middle_attack"
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
