@@ -202,6 +202,13 @@ pref("keyword.enabled",         false);
 EOF
 dch -a "Display an error if URL is invalid."
 
+cat << EOF >>debian/vendor.js.in
+// Don't try to guess URLs
+// http://www-archive.mozilla.org/docs/end-user/domain-guessing.html
+pref("browser.fixup.alternate.enabled",         false);
+EOF
+dch -a "Disable domain guessing."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
