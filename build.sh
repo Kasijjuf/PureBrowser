@@ -237,6 +237,12 @@ pref("extensions.update.enabled",               true);
 EOF
 dch -a "Enable automatic add-on updates."
 
+cat << EOF >>debian/vendor.js.in
+// https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2015-2743
+lockPref("pdfjs.disabled",          true);
+EOF
+dch -a "Disable build-in PDF viewer."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
