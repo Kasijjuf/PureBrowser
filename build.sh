@@ -267,12 +267,14 @@ EOF
 dch -a "Disable 3DES; http://en.citizendium.org/wiki/Meet-in-the-middle_attack"
 
 cat << EOF >>debian/vendor.js.in
+// Prevent logjamming.
 lockPref("security.ssl3.dhe_rsa_camellia_256_sha",          false);
 lockPref("security.ssl3.dhe_rsa_aes_256_sha",               false);
 EOF
 dch -a "Stop logjamming attacks."
 
 cat << EOF >>debian/vendor.js.in
+// Disable DSA.
 lockPref("security.ssl3.dhe_dss_aes_128_sha",               false);
 lockPref("security.ssl3.dhe_dss_aes_256_sha",               false);
 lockPref("security.ssl3.dhe_dss_camellia_128_sha",          false);
@@ -281,6 +283,7 @@ EOF
 dch -a "Disable DSA ciphers."
 
 cat << EOF >>debian/vendor.js.in
+// Disable null ciphers.
 lockPref("security.ssl3.rsa_null_sha",              false);
 lockPref("security.ssl3.rsa_null_md5",              false);
 lockPref("security.ssl3.ecdhe_rsa_null_sha",                false);
@@ -289,6 +292,18 @@ lockPref("security.ssl3.ecdh_rsa_null_sha",         false);
 lockPref("security.ssl3.ecdh_ecdsa_null_sha",               false);
 EOF
 dch -a "Disable null ciphers."
+
+cat << EOF >>debian/vendor.js.in
+// Disable RC4.
+lockPref("security.ssl3.ecdh_ecdsa_rc4_128_sha",            false);
+lockPref("security.ssl3.ecdh_rsa_rc4_128_sha",              false);
+lockPref("security.ssl3.ecdhe_ecdsa_rc4_128_sha",           false);
+lockPref("security.ssl3.ecdhe_rsa_rc4_128_sha",             false);
+lockPref("security.ssl3.rsa_rc4_128_md5",           false);
+lockPref("security.ssl3.rsa_rc4_128_sha",           false);
+lockPref("security.tls.unrestricted_rc4_fallback",          false);
+EOF
+dch -a "Disable RC4."
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
