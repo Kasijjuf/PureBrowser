@@ -17,6 +17,7 @@ find . -maxdepth 1 -type d -exec rename "s/iceweasel/purebrowser/" {} \;
 
 cd purebrowser*
 
+
 # remove the Iceweasel branding icon and logo and replace it.
 echo "Replacing logo and icon."
 rm -f debian/branding/iceweasel_icon.svg debian/branding/iceweasel_logo.svg
@@ -431,7 +432,10 @@ sed 's/777/755/;' -i toolkit/crashreporter/google-breakpad/Makefile.in
 # Fix bug when replacing iceweasel
 mv debian/browser.preinst.in debian/browser.postinst.in
 
-export DEBEMAIL DEBFULLNAME
+# Build using debhelper >> 9.
+sed -e 's/debhelper (>= 7.2.3)/debhelper (>> 9)/' \
+    -i debian/control.in
+dch -a "Bumped debhelper to version 9. No changes needed."
 dch -a "Converted into PureBrowser."
 
 echo "Building PureBrowser..."
