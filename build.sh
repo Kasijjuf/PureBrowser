@@ -194,6 +194,14 @@ pref("dom.webnotifications.enabled",            false);
 EOF
 dch -a "Disable web nofitications."
 
+cat << EOF >>debian/vendor.js.in
+// Display an error message indicating the entered information is not a valid
+// URL instead of asking from google.
+// http://kb.mozillazine.org/Keyword.enabled#Caveats
+pref("keyword.enabled",         false);
+EOF
+dch -a "Display an error if URL is invalid."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
