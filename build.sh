@@ -225,6 +225,7 @@ do
 	patch --verbose -p1 < "$basedir"/data/patches/"$patchfile"
 done
 
+# Branding/Names
 cat << EOF >> browser/confvars.sh
 # PureBrowser settings
 MOZ_APP_VENDOR=PURISM
@@ -242,6 +243,18 @@ MOZ_ANDROID_GOOGLE_PLAY_SERVICES=0
 EOF
 
 sed 's/mozilla-esr/purism-esr/' -i browser/confvars.sh
+
+sed -e 's/designed/adapted from Mozilla Firefox/g' \
+    -e 's/Make a donation/Buy a Librem/g' \
+    -e 's/global community/small company/g' \
+    -e 's/working together to keep the Web open, public and accessible to all/devoted to defending privacy and freedom rights for users/g' \
+    -i browser/locales/en-US/chrome/browser/aboutDialog.dtd
+
+sed -e 's/Mozilla/Purism/g' \
+    -e 's/Mozilla Firefox/Purism PureBrowser/g' \
+    -e 's/Mozilla Corporation/Purism LLC/g' \
+    -e 's/https:\/\/www.mozilla.org/https:\/\/puri.sm/g' \
+    -i browser/branding/nightly/branding.nsi browser/branding/aurora/branding.nsi browser/branding/official/branding.nsi browser/branding/unofficial/branding.nsi
 
 # change the name of the app
 sed -e 's/iceweasel/purebrowser/g' -i debian/control.in debian/changelog
