@@ -124,46 +124,53 @@ lockPref("startup.homepage_welcome_url","https://duckduckgo.com");
 EOF
 export DEBEMAIL DEBFULLNAME && dch -p -l "-1" "Duckduckgo search page as home."
 
-# lockPreferences hardening
+# Security Hardening
 cat << EOF >>debian/vendor.js.in
-// disable Location-Aware Browsing
+// Disable Location-Aware Browsing
 // http://www.mozilla.org/en-US/firefox/geolocation/
 lockPref("geo.enabled",             false);
+
 EOF
 dch -a "Disable location-aware browsing."
 
 cat << EOF >>debian/vendor.js.in
 lockPref("media.peerconnection.enabled",            false);
+
 EOF
 dch -a "Disable media peer connections for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://developer.mozilla.org/en-US/docs/Web/API/BatteryManager
 lockPref("dom.battery.enabled",             false);
+
 EOF
 dch -a "Disable battery monitor for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://wiki.mozilla.org/WebAPI/Security/WebTelephony
 lockPref("dom.telephony.enabled",           false);
+
 EOF
 dch -a "Disable web telephony for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://developer.mozilla.org/en-US/docs/Web/API/navigator.sendBeacon
 lockPref("beacon.enabled",          false);
+
 EOF
 dch -a "Disable navigator beacon for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://developer.mozilla.org/en-US/docs/Mozilla/lockPreferences/lockPreference_reference/dom.event.clipboardevents.enabled
 lockPref("dom.event.clipboardevents.enabled",               false);
+
 EOF
 dch -a "Disable clipboard events for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://wiki.mozilla.org/HTML5_Speech_API
 lockPref("media.webspeech.recognition.enable",              false);
+
 EOF
 dch -a "Disable speech recognition."
 
@@ -171,6 +178,7 @@ cat << EOF >>debian/vendor.js.in
 // Disable getUserMedia screen sharing
 // https://mozilla.github.io/webrtc-landing/gum_test.html
 lockPref("media.getusermedia.screensharing.enabled",                false);
+
 EOF
 dch -a "Disable getUserMedia screen sharing."
 
@@ -178,6 +186,7 @@ cat << EOF >>debian/vendor.js.in
 // Disable sensor API
 // https://wiki.mozilla.org/Sensor_API
 lockPref("device.sensors.enabled",          false);
+
 EOF
 dch -a "Disable sensor API."
 
@@ -185,22 +194,28 @@ cat << EOF >>debian/vendor.js.in
 // Disable browser pings
 // http://kb.mozillazine.org/Browser.send_pings
 lockPref("browser.send_pings",              false);
+
 // Disable health reporting
 // https://support.mozilla.org/en-US/kb/firefox-health-report-understand-your-browser-perf
 lockPref("datareporting.healthreport.uploadEnabled",                false);
-// disable collection of the data (the healthreport.sqlite* files)
+
+// Disable collection of the data (the healthreport.sqlite* files)
 lockPref("datareporting.healthreport.service.enabled",              false);
+
 // https://gecko.readthedocs.org/en/latest/toolkit/components/telemetry/telemetry/preferences.html
 lockPref("datareporting.policy.dataSubmissionEnabled",              false);
+
 // Disable heartbeat
 // https://wiki.mozilla.org/Advocacy/heartbeat
 lockPref("browser.selfsupport.url",         "");
+
 EOF
 dch -a "Disable browser pings and health reports."
 
 cat << EOF >>debian/vendor.js.in
 // Disable web notifications
 lockPref("dom.webnotifications.enabled",            false);
+
 EOF
 dch -a "Disable web nofitications."
 
@@ -208,6 +223,7 @@ cat << EOF >>debian/vendor.js.in
 // Display an error message indicating the entered information is not a valid URL
 // http://kb.mozillazine.org/Keyword.enabled#Caveats
 lockPref("keyword.enabled",         false);
+
 EOF
 dch -a "Display an error if URL is invalid."
 
@@ -215,18 +231,21 @@ cat << EOF >>debian/vendor.js.in
 // Don't try to guess URLs
 // http://www-archive.mozilla.org/docs/end-user/domain-guessing.html
 lockPref("browser.fixup.alternate.enabled",         false);
+
 EOF
 dch -a "Disable domain guessing."
 
 cat << EOF >>debian/vendor.js.in
 // Never try to use flash
 lockPref("plugin.state.flash",              0);
+
 EOF
 dch -a "Don't try to use flash."
 
 cat << EOF >>debian/vendor.js.in
 // http://forums.mozillazine.org/viewtopic.php?p=13845077&sid=28af2622e8bd8497b9113851676846b1#p13845077
 lockPref("media.gmp-provider.enabled",            false);
+
 EOF
 dch -a "Disable OpenH264 codec."
 
@@ -238,18 +257,21 @@ lockPref("toolkit.telemetry.unified",               false);
 // https://wiki.mozilla.org/Telemetry/Experiments
 lockPref("experiments.supported",           false);
 lockPref("experiments.enabled",             false);
+
 EOF
 dch -a "Disable telemetry."
 
 cat << EOF >>debian/vendor.js.in
 // https://blog.mozilla.org/addons/how-to-turn-off-add-on-updates/
 pref("extensions.update.enabled",               true);
+
 EOF
 dch -a "Enable automatic add-on updates."
 
 cat << EOF >>debian/vendor.js.in
 // https://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2015-2743
 lockPref("pdfjs.disabled",          true);
+
 EOF
 dch -a "Disable build-in PDF viewer."
 
@@ -263,6 +285,7 @@ lockPref("security.ssl3.ecdhe_ecdsa_des_ede3_sha",          false);
 lockPref("security.ssl3.ecdhe_rsa_des_ede3_sha",            false);
 lockPref("security.ssl3.rsa_des_ede3_sha",          false);
 lockPref("security.ssl3.rsa_fips_des_ede3_sha",             false);
+
 EOF
 dch -a "Disable 3DES; http://en.citizendium.org/wiki/Meet-in-the-middle_attack"
 
@@ -270,6 +293,7 @@ cat << EOF >>debian/vendor.js.in
 // Prevent logjamming.
 lockPref("security.ssl3.dhe_rsa_camellia_256_sha",          false);
 lockPref("security.ssl3.dhe_rsa_aes_256_sha",               false);
+
 EOF
 dch -a "Stop logjamming attacks."
 
@@ -279,6 +303,7 @@ lockPref("security.ssl3.dhe_dss_aes_128_sha",               false);
 lockPref("security.ssl3.dhe_dss_aes_256_sha",               false);
 lockPref("security.ssl3.dhe_dss_camellia_128_sha",          false);
 lockPref("security.ssl3.dhe_dss_camellia_256_sha",          false);
+
 EOF
 dch -a "Disable DSA ciphers."
 
@@ -290,6 +315,7 @@ lockPref("security.ssl3.ecdhe_rsa_null_sha",                false);
 lockPref("security.ssl3.ecdhe_ecdsa_null_sha",              false);
 lockPref("security.ssl3.ecdh_rsa_null_sha",         false);
 lockPref("security.ssl3.ecdh_ecdsa_null_sha",               false);
+
 EOF
 dch -a "Disable null ciphers."
 
@@ -302,8 +328,29 @@ lockPref("security.ssl3.ecdhe_rsa_rc4_128_sha",             false);
 lockPref("security.ssl3.rsa_rc4_128_md5",           false);
 lockPref("security.ssl3.rsa_rc4_128_sha",           false);
 lockPref("security.tls.unrestricted_rc4_fallback",          false);
+
 EOF
 dch -a "Disable RC4."
+
+cat << EOF >>debian/vendor.js.in
+// Disable 40 bit
+lockPref("security.ssl3.rsa_rc4_40_md5",            false);
+lockPref("security.ssl3.rsa_rc2_40_md5",            false);
+
+// Disable 56 bit
+lockPref("security.ssl3.rsa_1024_rc4_56_sha",               false);
+
+// Disable 128 bit
+lockPref("security.ssl3.rsa_camellia_128_sha",              false);
+lockPref("security.ssl3.ecdhe_rsa_aes_128_sha",             false);
+lockPref("security.ssl3.ecdhe_ecdsa_aes_128_sha",           false);
+lockPref("security.ssl3.ecdh_rsa_aes_128_sha",              false);
+lockPref("security.ssl3.ecdh_ecdsa_aes_128_sha",            false);
+lockPref("security.ssl3.dhe_rsa_camellia_128_sha",          false);
+lockPref("security.ssl3.dhe_rsa_aes_128_sha",               false);
+
+EOF
+dch -a "Disable 40-128 bit encryption." 
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
