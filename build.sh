@@ -266,6 +266,12 @@ lockPref("security.ssl3.rsa_fips_des_ede3_sha",             false);
 EOF
 dch -a "Disable 3DES; http://en.citizendium.org/wiki/Meet-in-the-middle_attack"
 
+cat << EOF >>debian/vendor.js.in
+lockPref("security.ssl3.dhe_rsa_camellia_256_sha",          false);
+lockPref("security.ssl3.dhe_rsa_aes_256_sha",               false);
+EOF
+dch -a "Stop logjamming attacks."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
