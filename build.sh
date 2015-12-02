@@ -119,102 +119,106 @@ sed -e "/startup.homepage_override/d" \
     -i debian/branding/firefox-branding.js
 
 cat << EOF >> debian/branding/firefox-branding.js
-pref("startup.homepage_override_url","https://duckduckgo.com");
-pref("startup.homepage_welcome_url","https://duckduckgo.com");
+lockPref("startup.homepage_override_url","https://duckduckgo.com");
+lockPref("startup.homepage_welcome_url","https://duckduckgo.com");
 EOF
 export DEBEMAIL DEBFULLNAME && dch -p -l "-1" "Duckduckgo search page as home."
 
-# preferences hardening
+# lockPreferences hardening
 cat << EOF >>debian/vendor.js.in
 // disable Location-Aware Browsing
 // http://www.mozilla.org/en-US/firefox/geolocation/
-pref("geo.enabled",             false);
+lockPref("geo.enabled",             false);
 EOF
 dch -a "Disable location-aware browsing."
 
 cat << EOF >>debian/vendor.js.in
-pref("media.peerconnection.enabled",            false);
+lockPref("media.peerconnection.enabled",            false);
 EOF
 dch -a "Disable media peer connections for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://developer.mozilla.org/en-US/docs/Web/API/BatteryManager
-pref("dom.battery.enabled",             false);
+lockPref("dom.battery.enabled",             false);
 EOF
 dch -a "Disable battery monitor for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://wiki.mozilla.org/WebAPI/Security/WebTelephony
-pref("dom.telephony.enabled",           false);
+lockPref("dom.telephony.enabled",           false);
 EOF
 dch -a "Disable web telephony for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://developer.mozilla.org/en-US/docs/Web/API/navigator.sendBeacon
-pref("beacon.enabled",          false);
+lockPref("beacon.enabled",          false);
 EOF
 dch -a "Disable navigator beacon for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
-// https://developer.mozilla.org/en-US/docs/Mozilla/preferences/preference_reference/dom.event.clipboardevents.enabled
-pref("dom.event.clipboardevents.enabled",               false);
+// https://developer.mozilla.org/en-US/docs/Mozilla/lockPreferences/lockPreference_reference/dom.event.clipboardevents.enabled
+lockPref("dom.event.clipboardevents.enabled",               false);
 EOF
 dch -a "Disable clipboard events for internal IP leak."
 
 cat << EOF >>debian/vendor.js.in
 // https://wiki.mozilla.org/HTML5_Speech_API
-pref("media.webspeech.recognition.enable",              false);
+lockPref("media.webspeech.recognition.enable",              false);
 EOF
 dch -a "Disable speech recognition."
 
 cat << EOF >>debian/vendor.js.in
 // Disable getUserMedia screen sharing
 // https://mozilla.github.io/webrtc-landing/gum_test.html
-pref("media.getusermedia.screensharing.enabled",                false);
+lockPref("media.getusermedia.screensharing.enabled",                false);
 EOF
 dch -a "Disable getUserMedia screen sharing."
 
 cat << EOF >>debian/vendor.js.in
 // Disable sensor API
 // https://wiki.mozilla.org/Sensor_API
-pref("device.sensors.enabled",          false);
+lockPref("device.sensors.enabled",          false);
 EOF
 dch -a "Disable sensor API."
 
 cat << EOF >>debian/vendor.js.in
 // Disable browser pings
 // http://kb.mozillazine.org/Browser.send_pings
-pref("browser.send_pings",              false);
+lockPref("browser.send_pings",              false);
 EOF
 dch -a "Disable browser pings."
 
 cat << EOF >>debian/vendor.js.in
 // Disable web notifications
-pref("dom.webnotifications.enabled",            false);
+lockPref("dom.webnotifications.enabled",            false);
 EOF
 dch -a "Disable web nofitications."
 
 cat << EOF >>debian/vendor.js.in
-// Display an error message indicating the entered information is not a valid
-// URL instead of asking from google.
+// Display an error message indicating the entered information is not a valid URL
 // http://kb.mozillazine.org/Keyword.enabled#Caveats
-pref("keyword.enabled",         false);
+locklockPref("keyword.enabled",         false);
 EOF
 dch -a "Display an error if URL is invalid."
 
 cat << EOF >>debian/vendor.js.in
 // Don't try to guess URLs
 // http://www-archive.mozilla.org/docs/end-user/domain-guessing.html
-pref("browser.fixup.alternate.enabled",         false);
+lockPref("browser.fixup.alternate.enabled",         false);
 EOF
 dch -a "Disable domain guessing."
 
 cat << EOF >>debian/vendor.js.in
 // Never try to use flash
-pref("plugin.state.flash",              0);
+locklockPref("plugin.state.flash",              0);
 EOF
 dch -a "Don't try to use flash."
 
+cat << EOF >>debian/vendor.js.in
+// http://forums.mozillazine.org/viewtopic.php?p=13845077&sid=28af2622e8bd8497b9113851676846b1#p13845077
+pref("media.gmp-provider.enabled",            false);
+EOF
+dch -a "Disable OpenH264 codec"
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
@@ -230,7 +234,7 @@ EOF
 
 cat << EOF >>debian/vendor.js.in
 // DDG as default search engine
-defaultPref("browser.search.defaultenginename",              "DuckDuckGo");
+defaultlockPref("browser.search.defaultenginename",              "DuckDuckGo");
 EOF
 
 # patches
