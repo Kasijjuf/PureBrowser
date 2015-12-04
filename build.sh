@@ -391,7 +391,16 @@ lockPref("browser.safebrowsing.downloads.remote.enabled",       false);
 EOF
 dch -a "Disable safe browsing download lookups."
 
+cat << EOF >>debian/vendor.js.in
+// https://support.mozilla.org/en-US/kb/how-stop-firefox-making-automatic-connections#w_auto-update-checking
+lockPref("browser.search.update",               false);
+// https://support.mozilla.org/en-US/kb/how-stop-firefox-making-automatic-connections#w_mozilla-content
+lockPref("browser.aboutHomeSnippets.updateUrl",         "");
+// https://support.mozilla.org/en-US/kb/how-stop-firefox-making-automatic-connections#w_speculative-pre-connections
+lockPref("network.http.speculative-parallel-limit",             0);
 
+EOF
+dch -a "Disable some futher automatic connections."
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
