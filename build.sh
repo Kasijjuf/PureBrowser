@@ -432,6 +432,12 @@ lockPref("privacy.clearOnShutdown.downloads",           true);
 EOF
 dch -a "Forget download history on shutdown."
 
+cat << EOF >>debian/vendor.js.in
+lockPref("signon.rememberSignons",              false);
+
+EOF
+dch -a "Don't offer to remember usernames and passwords."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
