@@ -405,6 +405,16 @@ lockPref("network.http.speculative-parallel-limit",             0);
 EOF
 dch -a "Disable some futher automatic connections."
 
+cat << EOF >>debian/vendor.js.in
+lockPref("network.prefetch-next",           false);
+lockPref("network.dns.disableprefetch",             true);
+lockPref("network.dns.disableprefetchFromHTTPS",            true);
+// https://wiki.mozilla.org/Privacy/Reviews/Necko
+lockPref("network.predictor.enabled",           false);
+
+EOF
+dch -a "Disable link and DNS prefetching."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
