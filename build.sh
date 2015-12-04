@@ -426,6 +426,12 @@ lockPref("security.csp.enable",         true);
 EOF
 dch -a "Enable Content Security Policy."
 
+cat << EOF >>debian/vendor.js.in
+lockPref("privacy.clearOnShutdown.downloads",           true);
+
+EOF
+dch -a "Forget download history on shutdown."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
