@@ -417,6 +417,15 @@ lockPref("network.predictor.enabled",           false);
 EOF
 dch -a "Disable link and DNS prefetching."
 
+cat << EOF >>debian/vendor.js.in
+// https://bugzilla.mozilla.org/show_bug.cgi?id=855326
+lockPref("security.csp.experimentalEnabled",            true);
+// CSP https://developer.mozilla.org/en-US/docs/Web/Security/CSP/Introducing_Content_Security_Policy
+lockPref("security.csp.enable",         true);
+
+EOF
+dch -a "Enable Content Security Policy."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
