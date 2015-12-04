@@ -129,6 +129,7 @@ cat << EOF >>debian/vendor.js.in
 // Disable Location-Aware Browsing
 // http://www.mozilla.org/en-US/firefox/geolocation/
 lockPref("geo.enabled",             false);
+lockPref("browser.search.geoip.url",            "");
 
 EOF
 dch -a "Disable location-aware browsing."
