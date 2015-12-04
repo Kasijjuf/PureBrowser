@@ -401,6 +401,8 @@ lockPref("browser.search.update",               false);
 lockPref("browser.aboutHomeSnippets.updateUrl",         "");
 // https://support.mozilla.org/en-US/kb/how-stop-firefox-making-automatic-connections#w_speculative-pre-connections
 lockPref("network.http.speculative-parallel-limit",             0);
+// http://kb.mozillazine.org/Browser.search.suggest.enabled
+lockPref("browser.search.suggest.enabled",              false);
 
 EOF
 dch -a "Disable some futher automatic connections."
