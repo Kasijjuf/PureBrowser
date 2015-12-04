@@ -353,6 +353,13 @@ lockPref("security.ssl3.dhe_rsa_aes_128_sha",               false);
 EOF
 dch -a "Disable 40-128 bit encryption." 
 
+cat << EOF >>debian/vendor.js.in
+// https://blog.mozilla.org/security/2012/10/11/click-to-play-plugins-blocklist-style/
+lockPref("plugins.click_to_play",               true);
+
+EOF
+dch -a "Enable click-to-play."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
