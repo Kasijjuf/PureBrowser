@@ -360,6 +360,15 @@ lockPref("plugins.click_to_play",               true);
 EOF
 dch -a "Enable click-to-play."
 
+cat << EOF >>debian/vendor.js.in
+lockPref("browser.newtabpage.enhanced",         false);
+lockPref("browser.newtab.preload",              false);
+lockPref("browser.newtabpage.directory.ping",           "");
+lockPref("browser.newtabpage.directory.source",         "data:text/plain,{}");
+
+EOF
+dch -a "Disable new-tab tile ads and preloading."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
