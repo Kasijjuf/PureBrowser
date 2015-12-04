@@ -17,7 +17,6 @@ find . -maxdepth 1 -type d -exec rename "s/iceweasel/purebrowser/" {} \;
 
 cd purebrowser*
 
-
 # remove the Iceweasel branding icon and logo and replace it.
 echo "Replacing logo and icon."
 rm -f debian/branding/iceweasel_icon.svg debian/branding/iceweasel_logo.svg
@@ -368,6 +367,13 @@ lockPref("browser.newtabpage.directory.source",         "data:text/plain,{}");
 
 EOF
 dch -a "Disable new-tab tile ads and preloading."
+
+cat << EOF >>debian/vendor.js.in
+// https://support.mozilla.org/en-US/kb/save-web-pages-later-pocket-firefox
+lockPref("browser.pocket.enabled",              false);
+
+EOF
+dch -a "Disable pocket."
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
