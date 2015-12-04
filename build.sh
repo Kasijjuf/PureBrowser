@@ -246,6 +246,9 @@ dch -a "Don't try to use flash."
 cat << EOF >>debian/vendor.js.in
 // http://forums.mozillazine.org/viewtopic.php?p=13845077&sid=28af2622e8bd8497b9113851676846b1#p13845077
 lockPref("media.gmp-provider.enabled",            false);
+// https://support.mozilla.org/en-US/kb/how-stop-firefox-making-automatic-connections#w_media-capabilities
+lockPref("media.gmp-gmpopenh264.enabled",               false);
+lockPref("media.gmp-manager.url",               "");
 
 EOF
 dch -a "Disable OpenH264 codec."
