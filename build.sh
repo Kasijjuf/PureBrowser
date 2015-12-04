@@ -377,12 +377,21 @@ EOF
 dch -a "Disable pocket."
 
 cat << EOF >>debian/vendor.js.in
+// https://wiki.mozilla.org/Loop
+lockPref("loop.enabled",              false);
+
+EOF
+dch -a "Disable firefox hello."
+
+cat << EOF >>debian/vendor.js.in
 // https://www.mozilla.org/en-US/firefox/39.0/releasenotes/
 // https://wiki.mozilla.org/Security/Application_Reputation
 lockPref("browser.safebrowsing.downloads.remote.enabled",       false);
 
 EOF
 dch -a "Disable safe browsing download lookups."
+
+
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
