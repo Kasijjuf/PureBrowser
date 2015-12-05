@@ -22,6 +22,20 @@ echo "Replacing logo and icon."
 rm -f debian/branding/iceweasel_icon.svg debian/branding/iceweasel_logo.svg
 cp "$basedir"/data/purebrowser* debian/branding/
 
+# Remove mozilla donation links in the about dialogue and some rebranding.
+# TODO: Actually write a new aboutRights.xhtml
+for STRING in rights.intro-point3-unbranded rights.intro-point4a-unbranded rights.intro-point4b-unbranded rights.intro-point4c-unbranded
+do
+    find -name aboutRights.dtd | xargs sed -i "s/ENTITY $STRING.*/ENTITY $STRING \"\">/"
+done
+		      
+sed '/helpus.start/d' -i browser/base/content/aboutDialog.xul
+
+cp "$basedir"/data/aboutRights.xhtml toolkit/content/aboutRights.xhtml
+cp "$basedir"/data/aboutRights.xhtml toolkit/content/aboutRights-unbranded.xhtml
+		        
+sed -i 's/<a\ href\=\"http\:\/\/www.mozilla.org\/\">Mozilla\ Project<\/a>/<a\ href\=\"https\:\/\/puri.sm\/\"\>Purism<\/a>/g' browser/base/content/overrides/app-license.html
+
 # stragglers
 for file in $(grep "iceweasel" . -rl)
 do
