@@ -442,6 +442,7 @@ dch -a "Enable Content Security Policy."
 
 cat << EOF >>debian/vendor.js.in
 lockPref("privacy.clearOnShutdown.downloads",           true);
+lockPref("browser.download.manager.retention",          0);
 
 EOF
 dch -a "Forget download history on shutdown."
