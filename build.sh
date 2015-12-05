@@ -453,6 +453,15 @@ lockPref("signon.rememberSignons",              false);
 EOF
 dch -a "Don't offer to remember usernames and passwords."
 
+cat << EOF >>debian/vendor.js.in
+// https://wiki.mozilla.org/Privacy/Reviews/New_Tab
+lockPref("browser.newtabpage.enabled",          false);
+// https://support.mozilla.org/en-US/kb/new-tab-page-show-hide-and-customize-top-sites#w_how-do-i-turn-the-new-tab-page-off
+lockPref("browser.newtab.url",          "about:blank");
+
+EOF
+dch -a "Blank new tab."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
