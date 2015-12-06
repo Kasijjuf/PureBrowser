@@ -403,6 +403,13 @@ EOF
 dch -a "TLS minimum and maximums."
 
 cat << EOF >>debian/vendor.js.in
+// https://wiki.mozilla.org/SecurityEngineering/Public_Key_Pinning#How_to_use_pinning
+lockPref("security.cert_pinning.enforcement_level",             2);
+
+EOF
+dch -a "Always enforce certification pinning."
+
+cat << EOF >>debian/vendor.js.in
 // https://blog.mozilla.org/security/2012/10/11/click-to-play-plugins-blocklist-style/
 lockPref("plugins.click_to_play",               true);
 
