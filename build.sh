@@ -509,6 +509,12 @@ lockPref("layout.css.visited_links_enabled",            false);
 EOF
 dch -a "Privacy for visited links."
 
+cat << EOF >>debian/vendor.js.in
+lockPref("browser.urlbar.maxRichResults",               0);
+
+EOF
+dch -a "Disable location bar dropdown."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
