@@ -449,6 +449,7 @@ dch -a "Forget download history on shutdown."
 
 cat << EOF >>debian/vendor.js.in
 lockPref("signon.rememberSignons",              false);
+lockPref("security.ask_for_password",           0);
 
 EOF
 dch -a "Don't offer to remember usernames and passwords."
@@ -461,6 +462,13 @@ lockPref("browser.newtab.url",          "about:blank");
 
 EOF
 dch -a "Blank new tab."
+
+cat << EOF >>debian/vendor.js.in
+// http://dbaron.org/mozilla/visited-privacy
+lockPref("layout.css.visited_links_enabled",            false);
+
+EOF
+dch -a "Privacy for visited links."
 
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
