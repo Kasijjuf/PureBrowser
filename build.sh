@@ -371,6 +371,13 @@ EOF
 dch -a "Disable 40-128 bit encryption." 
 
 cat << EOF >>debian/vendor.js.in
+// disable SSLv3
+lockPref("security.enable_ssl3",                false);
+
+EOF
+dch -a "Disable SSLv3"
+
+cat << EOF >>debian/vendor.js.in
 // https://blog.mozilla.org/security/2012/10/11/click-to-play-plugins-blocklist-style/
 lockPref("plugins.click_to_play",               true);
 
