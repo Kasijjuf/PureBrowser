@@ -367,15 +367,33 @@ lockPref("security.ssl3.ecdh_ecdsa_aes_128_sha",            false);
 lockPref("security.ssl3.dhe_rsa_camellia_128_sha",          false);
 lockPref("security.ssl3.dhe_rsa_aes_128_sha",               false);
 
+// But enable ECDHE with more than 128 bits
+lockPref("security.ssl3.ecdhe_rsa_aes_256_sha",         true);
+lockPref("security.ssl3.ecdhe_ecdsa_aes_256_sha",               true);
+
+// Fallbacks for compatibility
+lockPref("security.ssl3.rsa_aes_256_sha",               true);
+lockPref("security.ssl3.rsa_aes_128_sha",               true);
+
 EOF
 dch -a "Disable 40-128 bit encryption." 
 
 cat << EOF >>debian/vendor.js.in
 // disable SSLv3
 lockPref("security.enable_ssl3",                false);
+lockPref("security.ssl3.ecdh_rsa_aes_256_sha",          false);
+lockPref("security.ssl3.ecdh_ecdsa_aes_256_sha",                false);
+lockPref("security.ssl3.rsa_camellia_256_sha",          false);
 
 EOF
 dch -a "Disable SSLv3"
+
+cat << EOF >>debian/vendor.js.in
+lockPref("security.ssl3.ecdhe_ecdsa_aes_128_gcm_sha256",                true);
+lockPref("security.ssl3.ecdhe_rsa_aes_128_gcm_sha256",          true);
+
+EOF
+dch -a "Enable GCM."
 
 cat << EOF >>debian/vendor.js.in
 lockPref("security.tls.version.min",            1);
