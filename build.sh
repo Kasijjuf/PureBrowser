@@ -525,7 +525,7 @@ done
 cat << EOF >> browser/confvars.sh
 # PureBrowser settings
 MOZ_APP_VENDOR=PURISM
-MOZ_APP_VERSION=38.4esr-1
+MOZ_APP_VERSION=38.4esr
 MOZ_APP_PROFILE=mozilla/purebrowser
 MOZ_PAY=0
 MOZ_SERVICES_HEALTHREPORT=0
@@ -540,8 +540,7 @@ EOF
 
 sed 's/mozilla-esr/purism-esr/' -i browser/confvars.sh
 
-sed -e 's/designed/adapted from Mozilla Firefox/g' \
-    -e 's/Make a donation/Buy a Librem/g' \
+sed -e 's/designed/adapted from Firefox/g' \
     -e 's/global community/small company/g' \
     -e 's/working together to keep the Web open, public and accessible to all/devoted to defending privacy and freedom rights for users/g' \
     -i browser/locales/en-US/chrome/browser/aboutDialog.dtd
