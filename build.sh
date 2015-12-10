@@ -110,23 +110,6 @@ done
 fi
 exit 0 ' > debian/browser.postinst.in
 
-#cat << EOF >> browser/app/Makefile.in
-#libs::
-#	cp -a \$(topsrcdir)/extensions/* \$(FINAL_TARGET)/extensions/
-#	mkdir -p \$(DIST)/purebrowser/browser/extensions/ 
-#	cp -a \$(topsrcdir)/extensions/* \$(DIST)/purebrowser/browser/extensions/
-#EOF
-
-#cat << EOF >> mobile/android/app/Makefile.in
-#libs::
-#	mkdir -p \$(DIST)/bin/distribution
-#	cp -a \$(topsrcdir)/extensions/ \$(DIST)/bin/distribution/extensions
-#EOF
-
-#for EXTENSION in $(ls $basedir/data/extensions/); do
-#	sed "/Browser Chrome Files/s%$%\n@BINPATH@/browser/extensions/$EXTENSION/*%" -i browser/installer/package-manifest.in mobile/android/installer/package-manifest.in
-#done
-
 # disconnect.me search engine as home page
 sed -e "/startup.homepage_override/d" \
     -e "/startup.homepage_welcome/d" \
