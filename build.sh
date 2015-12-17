@@ -498,6 +498,14 @@ lockPref("browser.urlbar.maxRichResults",               0);
 EOF
 dch -a "Disable location bar dropdown."
 
+cat << EOF >>debian/vendor.js.in
+// https://wiki.mozilla.org/SVGOpenTypeFonts
+// the iSEC Partners Report recommends to disable this
+lockPref("gfx.font_rendering.opentype_svg.enabled",         false);
+
+EOF
+dch -a "Disable SVG OpenTypeFonts."
+
 # search plugins
 rm -f browser/locales/en-US/searchplugins/*.xml
 cp "$basedir"/data/searchplugins/* browser/locales/en-US/searchplugins -a
