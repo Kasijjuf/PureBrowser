@@ -189,6 +189,46 @@ var safeQuerySelectorAll = function(node, selector) {
 
 /******************************************************************************/
 
+var getElementBoundingClientRect = function(elem) {
+    var rect = typeof elem.getBoundingClientRect === 'function' ?
+        elem.getBoundingClientRect() :
+        { height: 0, left: 0, top: 0, width: 0 };
+
+    // https://github.com/gorhill/uBlock/issues/1024
+    // Try not returning an empty bounding rect.
+    if ( rect.width !== 0 && rect.height !== 0 ) {
+        return rect;
+    }
+
+    var left = rect.left,
+        right = rect.right,
+        top = rect.top,
+        bottom = rect.bottom;
+
+    var children = elem.children,
+        i = children.length;
+
+    while ( i-- ) {
+        rect = getElementBoundingClientRect(children[i]);
+        if ( rect.width === 0 || rect.height === 0 ) {
+            continue;
+        }
+        if ( rect.left < left ) { left = rect.left; }
+        if ( rect.right > right ) { right = rect.right; }
+        if ( rect.top < top ) { top = rect.top; }
+        if ( rect.bottom > bottom ) { bottom = rect.bottom; }
+    }
+
+    return {
+        height: bottom - top,
+        left: left,
+        top: top,
+        width: right - left
+    };
+};
+
+/******************************************************************************/
+
 var highlightElements = function(elems, force) {
     // To make mouse move handler more efficient
     if ( !force && elems.length === targetElements.length ) {
@@ -215,10 +255,7 @@ var highlightElements = function(elems, force) {
         if ( elem === pickerRoot ) {
             continue;
         }
-        if ( typeof elem.getBoundingClientRect !== 'function' ) {
-            continue;
-        }
-        rect = elem.getBoundingClientRect();
+        rect = getElementBoundingClientRect(elem);
 
         // Ignore if it's not on the screen
         if ( rect.left > ow || rect.top > oh ||
@@ -580,9 +617,16 @@ var userFilterFromCandidate = function() {
         return false;
     }
 
+    // https://github.com/gorhill/uBlock/issues/738
+    // Trim dots.
+    var hostname = window.location.hostname;
+    if ( hostname.slice(-1) === '.' ) {
+        hostname = hostname.slice(0, -1);
+    }
+
     // Cosmetic filter?
     if ( v.lastIndexOf('##', 0) === 0 ) {
-        return window.location.hostname + v;
+        return hostname + v;
     }
 
     // If domain included in filter, no need for domain option
@@ -591,7 +635,7 @@ var userFilterFromCandidate = function() {
     }
 
     // Assume net filter
-    return v + '$domain=' + window.location.hostname;
+    return v + '$domain=' + hostname;
 };
 
 /******************************************************************************/
@@ -749,6 +793,9 @@ var showDialog = function(options) {
 /******************************************************************************/
 
 var elementFromPoint = function(x, y) {
+    if ( !pickerRoot ) {
+        return null;
+    }
     pickerRoot.style.pointerEvents = 'none';
     var elem = document.elementFromPoint(x, y);
     if ( elem === document.body || elem === document.documentElement ) {
@@ -879,6 +926,10 @@ var startPicker = function(details) {
         details.frameContent,
         'text/html'
     );
+
+    // Provide an id users can use as anchor to personalize uBO's element
+    // picker style properties.
+    parsedDom.documentElement.id = 'ublock0-epicker';
 
     frameDoc.replaceChild(
         frameDoc.adoptNode(parsedDom.documentElement),
