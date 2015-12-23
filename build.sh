@@ -121,6 +121,16 @@ sed -e "/startup.homepage_override/d" \
 cat << EOF >> debian/branding/firefox-branding.js
 lockPref("startup.homepage_override_url","https://duckduckgo.com");
 lockPref("startup.homepage_welcome_url","https://duckduckgo.com");
+pref("browser.search.defaultenginename",      "DuckDuckGo");
+pref("browser.search.order.1",                "data:text/plain,browser.search.order.1=DuckDuckGo");
+pref("browser.search.order.2",                "data:text/plain,browser.search.order.2=DuckDuckGo");
+pref("browser.search.order.3",                "data:text/plain,browser.search.order.3=DuckDuckGo");
+// Market-specific search defaults (US market only)
+pref("browser.search.geoSpecificDefaults", true);
+pref("browser.search.defaultenginename.US",      "data:text/plain,browser.search.defaultenginename.US=DuckDuckGo");
+pref("browser.search.order.US.1",                "data:text/plain,browser.search.order.US.1=DuckDuckGo");
+pref("browser.search.order.US.2",                "data:text/plain,browser.search.order.US.2=DuckDuckGo");
+pref("browser.search.order.US.3",                "data:text/plain,browser.search.order.US.3=DuckDuckGo");
 EOF
 export DEBEMAIL DEBFULLNAME && dch -p -l "-1" "Duckduckgo search page as home."
 
