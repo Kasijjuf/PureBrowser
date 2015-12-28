@@ -131,6 +131,8 @@ pref("browser.search.order.US.3",                "data:text/plain,browser.search
 EOF
 export DEBEMAIL DEBFULLNAME && dch -p -l "-1" "Duckduckgo search page as home."
 
+cp debian/branding/firefox-branding.js debian/branding/firefox-branding.js.bkp
+cp "$basedir"/data/firefox.js debian/branding/firefox-branding.js
 # Security Hardening
 cat << EOF >>debian/vendor.js.in
 // Disable Location-Aware Browsing
