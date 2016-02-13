@@ -40,12 +40,8 @@ var oneHour = 60 * oneMinute;
 var defaultExternalLists = [
     '! Examples:',
     '! https://easylist-downloads.adblockplus.org/fb_annoyances_full.txt',
-    '! https://easylist-downloads.adblockplus.org/fb_annoyances_sidebar.txt',
-    '! https://easylist-downloads.adblockplus.org/fb_annoyances_newsfeed.txt',
     '! https://easylist-downloads.adblockplus.org/yt_annoyances_full.txt',
-    '! https://easylist-downloads.adblockplus.org/yt_annoyances_comments.txt',
-    '! https://easylist-downloads.adblockplus.org/yt_annoyances_suggestions.txt',
-    '! https://easylist-downloads.adblockplus.org/yt_annoyances_other.txt'
+    ''
 ].join('\n');
 
 /******************************************************************************/
@@ -130,11 +126,22 @@ return {
             title: 'uBlock filters – Unbreak',
             group: 'default'
         },
+        'assets/ublock/redirect.txt': {
+            title: 'uBlock filters – Block-then-redirect',
+            group: 'default'
+        },
         'assets/ublock/badware.txt': {
             title: 'uBlock filters – Badware risks',
             group: 'default',
             supportURL: 'https://github.com/gorhill/uBlock/wiki/Badware-risks',
             instructionURL: 'https://github.com/gorhill/uBlock/wiki/Badware-risks'
+        },
+        'assets/ublock/experimental.txt': {
+            title: 'uBlock filters – Experimental',
+            group: 'default',
+            off: true,
+            supportURL: 'https://github.com/gorhill/uBlock/wiki/Experimental-filters',
+            instructionURL: 'https://github.com/gorhill/uBlock/wiki/Experimental-filters'
         }
     },
 
@@ -178,7 +185,8 @@ return {
         "assets/thirdparties/www.fanboy.co.nz/fanboy-ultimate.txt": "https://www.fanboy.co.nz/r/fanboy-ultimate.txt",
         "assets/thirdparties/www.fanboy.co.nz/fanboy-vietnam.txt": "https://www.fanboy.co.nz/fanboy-vietnam.txt",
         "assets/thirdparties/www.void.gr/kargig/void-gr-filters.txt": "https://www.void.gr/kargig/void-gr-filters.txt",
-        "assets/thirdparties/www.zoso.ro/pages/rolist.txt": ""
+        "assets/thirdparties/www.zoso.ro/pages/rolist.txt": "",
+        "https://iadb.azurewebsites.net/Finland_adb.txt": "http://adb.juvander.net/Finland_adb.txt"
     },
 
     selfieAfter: 23 * oneMinute,
