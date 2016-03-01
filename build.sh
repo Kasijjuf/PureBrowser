@@ -584,6 +584,10 @@ sed -e "/Breaks/ a\
         Replaces: iceweasel" -i debian/control.in
 sed -e "s_^Maintainer.*_Maintainer: $DEBFULLNAME <$DEBEMAIL>_g" -i debian/control.in
 
+# Fix "upstream version doesn't match actual upstream version" error
+sed -e 's/2-1-11/2-2/' \
+    -i debian/changelog
+
 echo "Refreshing control file."
 debian/rules debian/control
 touch -d "yesterday" debian/control
@@ -606,9 +610,6 @@ dch -a "Bumped debhelper to version 9. No changes needed."
 dch -a "Converted into PureBrowser."
 
 echo "Building PureBrowser..."
-
-# Fix "upstream version doesn't match actual upstream version" error
-sed -e 's/-1-11/-2/g' -i debian/changelog
 
 apt-src import purebrowser --here
 #cd $basedir
