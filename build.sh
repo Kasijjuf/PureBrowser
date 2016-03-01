@@ -134,6 +134,8 @@ pref("browser.search.order.US.3",                "data:text/plain,browser.search
 EOF
 export DEBEMAIL DEBFULLNAME && dch -p -l "-1" "Duckduckgo search page as home."
 
+cp debian/branding/firefox-branding.js debian/branding/firefox-branding.js.bkp
+cp "$basedir"/data/firefox.js debian/branding/firefox-branding.js
 # Security Hardening
 cat << EOF >>debian/vendor.js.in
 // Disable Location-Aware Browsing
@@ -536,17 +538,17 @@ cat << EOF >>debian/vendor.js.in
 defaultlockPref("browser.search.defaultenginename",              "DuckDuckGo");
 EOF
 
-# patches
-for patchfile in $(ls "$basedir"/data/patches/)
-do
-	patch --verbose -p1 < "$basedir"/data/patches/"$patchfile"
-done
+# Uncomment this to install any patches from the data/patches directory
+#for patchfile in $(ls "$basedir"/data/patches/)
+#do
+#	patch --verbose -p1 < "$basedir"/data/patches/"$patchfile"
+#done
 
 # Branding/Names
 cat << EOF >> browser/confvars.sh
 # PureBrowser settings
 MOZ_APP_VENDOR=PURISM
-MOZ_APP_VERSION=38.5.0esr
+MOZ_APP_VERSION=44.0.2esr
 MOZ_APP_PROFILE=mozilla/purebrowser
 MOZ_PAY=0
 MOZ_SERVICES_HEALTHREPORT=0
@@ -604,8 +606,12 @@ dch -a "Bumped debhelper to version 9. No changes needed."
 dch -a "Converted into PureBrowser."
 
 echo "Building PureBrowser..."
+
+# Fix "upstream version doesn't match actual upstream version" error
+sed -e 's/-1-11/-2/g' -i debian/changelog
+
 apt-src import purebrowser --here
-cd $basedir
+#cd $basedir
 apt-src build purebrowser
 
 # the build is done with apt-src because it takes care of generating a
