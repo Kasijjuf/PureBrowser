@@ -536,11 +536,11 @@ cat << EOF >>debian/vendor.js.in
 defaultlockPref("browser.search.defaultenginename",              "DuckDuckGo");
 EOF
 
-# patches
-for patchfile in $(ls "$basedir"/data/patches/)
-do
-	patch --verbose -p1 < "$basedir"/data/patches/"$patchfile"
-done
+# Uncomment this to install any patches from the data/patches directory
+#for patchfile in $(ls "$basedir"/data/patches/)
+#do
+#	patch --verbose -p1 < "$basedir"/data/patches/"$patchfile"
+#done
 
 # Branding/Names
 cat << EOF >> browser/confvars.sh
@@ -604,8 +604,12 @@ dch -a "Bumped debhelper to version 9. No changes needed."
 dch -a "Converted into PureBrowser."
 
 echo "Building PureBrowser..."
+
+# Fix "upstream version doesn't match actual upstream version" error
+sed -e 's/-1-11/-2/g' -i debian/changelog
+
 apt-src import purebrowser --here
-cd $basedir
+#cd $basedir
 apt-src build purebrowser
 
 # the build is done with apt-src because it takes care of generating a
