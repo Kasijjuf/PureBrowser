@@ -546,7 +546,7 @@ done
 cat << EOF >> browser/confvars.sh
 # PureBrowser settings
 MOZ_APP_VENDOR=PURISM
-MOZ_APP_VERSION=38.5.0esr
+MOZ_APP_VERSION=44.0.2esr
 MOZ_APP_PROFILE=mozilla/purebrowser
 MOZ_PAY=0
 MOZ_SERVICES_HEALTHREPORT=0
