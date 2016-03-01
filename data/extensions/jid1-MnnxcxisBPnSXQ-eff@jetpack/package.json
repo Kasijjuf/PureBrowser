@@ -10,7 +10,7 @@
                    "ghostwords"],
   "permissions": { "private-browsing": true },
   "license": "GPL 3",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "main": "lib/main.js",
   "preferences": [{
     "name": "heuristicEnabled",
@@ -45,6 +45,8 @@
     "type": "bool",
     "value": true
   }],
-  "icon": "data/icons/badger-48.png",
-  "icon64": "data/icons/badger-64.png"
+  "icon": {
+    "48": "icon.png",
+    "64": "icon64.png"
+  }
 }
