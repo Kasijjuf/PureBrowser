@@ -6,9 +6,11 @@ locale ublock0 bg ./locale/bg/
 locale ublock0 bn ./locale/bn/
 locale ublock0 ca ./locale/ca/
 locale ublock0 cs ./locale/cs/
+locale ublock0 cv ./locale/cv/
 locale ublock0 da ./locale/da/
 locale ublock0 de ./locale/de/
 locale ublock0 el ./locale/el/
+locale ublock0 eo ./locale/eo/
 locale ublock0 es ./locale/es/
 locale ublock0 et ./locale/et/
 locale ublock0 eu ./locale/eu/

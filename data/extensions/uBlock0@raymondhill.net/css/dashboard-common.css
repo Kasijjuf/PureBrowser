@@ -16,10 +16,14 @@ a {
     text-decoration: none;
     }
 a.info {
-    color: #ccc;
+    color: black;
+    opacity: 0.3;
     }
 a.info:hover {
-    color: #444;
+    opacity: 0.9
+    }
+a.info.important {
+    color: orangered;
     }
 button {
     padding: 0.33em;
@@ -30,9 +34,16 @@ div > p:first-child {
 div > p:last-child {
     margin-bottom: 0;
     }
+input[type="number"] {
+    width: 5em;
+    }
 
 .para {
     width: 40em;
+    }
+.synopsis {
+    font-size: small;
+    opacity: 0.8;
     }
 .whatisthis {
     margin: 0 0 0 8px;

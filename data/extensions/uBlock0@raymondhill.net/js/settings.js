@@ -159,68 +159,42 @@ var changeUserSettings = function(name, value) {
 
 /******************************************************************************/
 
+var onInputChanged = function(ev) {
+    var input = ev.target;
+    var name = this.getAttribute('data-setting-name');
+    var value = input.value;
+    if ( name === 'largeMediaSize' ) {
+        value = Math.min(Math.max(Math.floor(parseInt(value, 10) || 0), 0), 1000000);
+    }
+    if ( value !== input.value ) {
+        input.value = value;
+    }
+    changeUserSettings(name, value);
+};
+
+/******************************************************************************/
+
 // TODO: use data-* to declare simple settings
 
 var onUserSettingsReceived = function(details) {
-    uDom('#collapse-blocked')
-        .prop('checked', details.collapseBlocked === true)
-        .on('change', function(){
-            changeUserSettings('collapseBlocked', this.checked);
-        });
+    uDom('[data-setting-type="bool"]').forEach(function(uNode) {
+        uNode.prop('checked', details[uNode.attr('data-setting-name')] === true)
+             .on('change', function() {
+                    changeUserSettings(
+                        this.getAttribute('data-setting-name'),
+                        this.checked
+                    );
+                });
+    });
 
-    uDom('#icon-badge')
-        .prop('checked', details.showIconBadge === true)
-        .on('change', function(){
-            changeUserSettings('showIconBadge', this.checked);
-        });
+    uDom('[data-setting-name="noLargeMedia"] ~ label:first-of-type > input[type="number"]')
+        .attr('data-setting-name', 'largeMediaSize')
+        .attr('data-setting-type', 'input');
 
-    uDom('#context-menu-enabled')
-        .prop('checked', details.contextMenuEnabled === true)
-        .on('change', function(){
-            changeUserSettings('contextMenuEnabled', this.checked);
-        });
-
-    uDom('#color-blind-friendly')
-        .prop('checked', details.colorBlindFriendly === true)
-        .on('change', function(){
-            changeUserSettings('colorBlindFriendly', this.checked);
-        });
-
-    uDom('#cloud-storage-enabled')
-        .prop('checked', details.cloudStorageEnabled === true)
-        .on('change', function(){
-            changeUserSettings('cloudStorageEnabled', this.checked);
-        });
-
-    uDom('#advanced-user-enabled')
-        .prop('checked', details.advancedUserEnabled === true)
-        .on('change', function(){
-            changeUserSettings('advancedUserEnabled', this.checked);
-        });
-
-    uDom('#prefetching-disabled')
-        .prop('checked', details.prefetchingDisabled === true)
-        .on('change', function(){
-            changeUserSettings('prefetchingDisabled', this.checked);
-        });
-
-    uDom('#hyperlink-auditing-disabled')
-        .prop('checked', details.hyperlinkAuditingDisabled === true)
-        .on('change', function(){
-            changeUserSettings('hyperlinkAuditingDisabled', this.checked);
-        });
-
-    uDom('#webrtc-ipaddress-hidden')
-        .prop('checked', details.webrtcIPAddressHidden === true)
-        .on('change', function(){
-            changeUserSettings('webrtcIPAddressHidden', this.checked);
-        });
-
-    uDom('#experimental-enabled')
-        .prop('checked', details.experimentalEnabled === true)
-        .on('change', function(){
-            changeUserSettings('experimentalEnabled', this.checked);
-        });
+    uDom('[data-setting-type="input"]').forEach(function(uNode) {
+        uNode.val(details[uNode.attr('data-setting-name')])
+             .on('change', onInputChanged);
+    });
 
     uDom('#export').on('click', exportToFile);
     uDom('#import').on('click', startImportFilePicker);

@@ -294,16 +294,29 @@ PageStore.factory = function(tabId) {
 PageStore.prototype.init = function(tabId) {
     var tabContext = µb.tabContextManager.mustLookup(tabId);
     this.tabId = tabId;
+
+    // If we are navigating from-to same site, remember whether large
+    // media elements were temporarily allowed.
+    if (
+        typeof this.allowLargeMediaElementsUntil !== 'number' ||
+        tabContext.rootHostname !== this.tabHostname
+    ) {
+        this.allowLargeMediaElementsUntil = 0;
+    }
+
     this.tabHostname = tabContext.rootHostname;
     this.title = tabContext.rawURL;
     this.rawURL = tabContext.rawURL;
     this.hostnameToCountMap = {};
     this.contentLastModified = 0;
-    this.frames = {};
+    this.frames = Object.create(null);
     this.perLoadBlockedRequestCount = 0;
     this.perLoadAllowedRequestCount = 0;
     this.hiddenElementCount = ''; // Empty string means "unknown"
     this.remoteFontCount = 0;
+    this.popupBlockedCount = 0;
+    this.largeMediaCount = 0;
+    this.largeMediaTimer = null;
     this.netFilteringCache = NetFilteringResultCache.factory();
 
     // Support `elemhide` filter option. Called at this point so the required
@@ -353,6 +366,10 @@ PageStore.prototype.reuse = function(context) {
     }
 
     // A new page is completely reloaded from scratch, reset all.
+    if ( this.largeMediaTimer !== null ) {
+        clearTimeout(this.largeMediaTimer);
+        this.largeMediaTimer = null;
+    }
     this.disposeFrameStores();
     this.netFilteringCache = this.netFilteringCache.dispose();
     this.init(this.tabId);
@@ -372,6 +389,11 @@ PageStore.prototype.dispose = function() {
     this.title = '';
     this.rawURL = '';
     this.hostnameToCountMap = null;
+    this.allowLargeMediaElementsUntil = 0;
+    if ( this.largeMediaTimer !== null ) {
+        clearTimeout(this.largeMediaTimer);
+        this.largeMediaTimer = null;
+    }
     this.disposeFrameStores();
     this.netFilteringCache = this.netFilteringCache.dispose();
     if ( pageStoreJunkyard.length < pageStoreJunkyardMax ) {
@@ -385,11 +407,9 @@ PageStore.prototype.dispose = function() {
 PageStore.prototype.disposeFrameStores = function() {
     var frames = this.frames;
     for ( var k in frames ) {
-        if ( frames.hasOwnProperty(k) ) {
-            frames[k].dispose();
-        }
+        frames[k].dispose();
     }
-    this.frames = {};
+    this.frames = Object.create(null);
 };
 
 /******************************************************************************/
@@ -402,7 +422,7 @@ PageStore.prototype.getFrame = function(frameId) {
 
 PageStore.prototype.setFrame = function(frameId, frameURL) {
     var frameStore = this.frames[frameId];
-    if ( frameStore instanceof FrameStore ) {
+    if ( frameStore ) {
         frameStore.init(this.rootHostname, frameURL);
     } else {
         this.frames[frameId] = FrameStore.factory(this.rootHostname, frameURL);
@@ -420,8 +440,8 @@ PageStore.prototype.createContextFromPage = function() {
 
 PageStore.prototype.createContextFromFrameId = function(frameId) {
     var context = new µb.tabContextManager.createContext(this.tabId);
-    if ( this.frames.hasOwnProperty(frameId) ) {
-        var frameStore = this.frames[frameId];
+    var frameStore = this.frames[frameId];
+    if ( frameStore ) {
         context.pageHostname = frameStore.pageHostname;
         context.pageDomain = frameStore.pageDomain;
     } else {
@@ -447,27 +467,16 @@ PageStore.prototype.getNetFilteringSwitch = function() {
 /******************************************************************************/
 
 PageStore.prototype.getSpecificCosmeticFilteringSwitch = function() {
-    if ( this.getNetFilteringSwitch() === false ) {
-        return false;
-    }
-
-    var tabContext = µb.tabContextManager.mustLookup(this.tabId);
-
-    if ( µb.hnSwitches.evaluateZ('no-cosmetic-filtering', tabContext.rootHostname) ) {
-        return false;
-    }
-
-    return µb.userSettings.advancedUserEnabled === false ||
-           µb.sessionFirewall.mustAllowCellZY(tabContext.rootHostname, tabContext.rootHostname, '*') === false;
+    var tabContext = µb.tabContextManager.lookup(this.tabId);
+    return tabContext !== null &&
+           µb.hnSwitches.evaluateZ('no-cosmetic-filtering', tabContext.rootHostname) !== true;
 };
 
 /******************************************************************************/
 
 PageStore.prototype.getGenericCosmeticFilteringSwitch = function() {
-    if ( this.skipCosmeticFiltering ) {
-        return false;
-    }
-    return this.getSpecificCosmeticFilteringSwitch();
+    return this.skipCosmeticFiltering !== true &&
+           this.getSpecificCosmeticFilteringSwitch();
 };
 
 /******************************************************************************/
@@ -475,6 +484,32 @@ PageStore.prototype.getGenericCosmeticFilteringSwitch = function() {
 PageStore.prototype.toggleNetFilteringSwitch = function(url, scope, state) {
     µb.toggleNetFilteringSwitch(url, scope, state);
     this.netFilteringCache.empty();
+};
+
+/******************************************************************************/
+
+PageStore.prototype.logLargeMedia = (function() {
+    var injectScript = function() {
+        this.largeMediaTimer = null;
+        µb.scriptlets.injectDeep(
+            this.tabId,
+            'load-large-media-interactive'
+        );
+        µb.contextMenu.update(this.tabId);
+    };
+    return function() {
+        this.largeMediaCount += 1;
+        if ( this.largeMediaTimer === null ) {
+            this.largeMediaTimer = vAPI.setTimeout(injectScript.bind(this), 500);
+        }
+    };
+})();
+
+PageStore.prototype.temporarilyAllowLargeMediaElements = function() {
+    this.largeMediaCount = 0;
+    µb.contextMenu.update(this.tabId);
+    this.allowLargeMediaElementsUntil = Date.now() + 86400000;
+    µb.scriptlets.injectDeep(this.tabId, 'load-large-media-all');
 };
 
 /******************************************************************************/

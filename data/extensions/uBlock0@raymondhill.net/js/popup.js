@@ -41,6 +41,12 @@ var dfPaneVisibleStored = vAPI.localStorage.getItem('popupFirewallPane') === 'tr
 // of the popup, and the left pane will have a scrollbar if ever its
 // height is more than what is available.
 (function() {
+    // No restriction on vertical size?
+    if ( /[\?&]fullsize=1/.test(window.location.search) ) {
+        document.body.classList.add('fullsize');
+        return;
+    }
+
     var rpane = document.querySelector('#panes > div:nth-of-type(1)');
     if ( typeof rpane.offsetHeight === 'number' ) {
         document.querySelector('#panes > div:nth-of-type(2)').style.setProperty(
@@ -160,6 +166,7 @@ var hashFromPopupData = function(reset) {
     }
     hasher.sort();
     hasher.push(uDom('body').hasClass('off'));
+    hasher.push(uDom.nodeFromId('no-large-media').classList.contains('on'));
     hasher.push(uDom.nodeFromId('no-cosmetic-filtering').classList.contains('on'));
     hasher.push(uDom.nodeFromId('no-remote-fonts').classList.contains('on'));
 
@@ -459,9 +466,19 @@ var renderPopup = function() {
 
     // Extra tools
     uDom.nodeFromId('no-popups').classList.toggle('on', popupData.noPopups === true);
-    uDom.nodeFromId('no-strict-blocking').classList.toggle('on', popupData.noStrictBlocking === true);
+    uDom.nodeFromId('no-large-media').classList.toggle('on', popupData.noLargeMedia === true);
     uDom.nodeFromId('no-cosmetic-filtering').classList.toggle('on', popupData.noCosmeticFiltering === true);
     uDom.nodeFromId('no-remote-fonts').classList.toggle('on', popupData.noRemoteFonts === true);
+
+    // Report blocked popup count on badge
+    total = popupData.popupBlockedCount;
+    uDom.nodeFromSelector('#no-popups > span.badge')
+        .textContent = total ? total.toLocaleString() : '';
+
+    // Report large media count on badge
+    total = popupData.largeMediaCount;
+    uDom.nodeFromSelector('#no-large-media > span.badge')
+        .textContent = total ? total.toLocaleString() : '';
 
     // Report remote font count on badge
     total = popupData.remoteFontCount;
@@ -686,7 +703,23 @@ var reloadTab = function() {
 
 /******************************************************************************/
 
-var toggleMinimize = function() {
+var toggleMinimize = function(ev) {
+    // Special display mode: in its own tab/window, with no vertical restraint.
+    // Useful to take snapshots of the whole list of domains -- example:
+    //   https://github.com/gorhill/uBlock/issues/736#issuecomment-178879944
+    if ( ev.shiftKey && ev.ctrlKey ) {
+        messager.send({
+            what: 'gotoURL',
+            details: {
+                url: 'popup.html?tabId=' + popupData.tabId + '&fullsize=1',
+                select: true,
+                index: -1
+            }
+        });
+        vAPI.closePopup();
+        return;
+    }
+
     popupData.firewallPaneMinimized = uDom.nodeFromId('firewallContainer')
                                           .classList
                                           .toggle('minimized');
@@ -728,18 +761,18 @@ var revertFirewallRules = function() {
 
 /******************************************************************************/
 
-var toggleHostnameSwitch = function() {
-    var elem = uDom(this);
-    var switchName = elem.attr('id');
+var toggleHostnameSwitch = function(ev) {
+    var target = ev.currentTarget;
+    var switchName = target.getAttribute('id');
     if ( !switchName ) {
         return;
     }
-    elem.toggleClass('on');
+    target.classList.toggle('on');
     messager.send({
         what: 'toggleHostnameSwitch',
         name: switchName,
         hostname: popupData.pageHostname,
-        state: elem.hasClass('on'),
+        state: target.classList.contains('on'),
         tabId: popupData.tabId
     });
     hashFromPopupData();
@@ -814,30 +847,39 @@ var getPopupData = function(tabId) {
 /******************************************************************************/
 
 var onShowTooltip = function() {
-    if ( popupData.advancedUserEnabled ) {
+    if ( popupData.tooltipsDisabled ) {
         return;
     }
 
-    var tip = document.getElementById('tooltip');
     var target = this;
 
+    // Tooltip container
+    var ttc = uDom(target).ancestors('.tooltipContainer').nodeAt(0) ||
+              document.body;
+    var ttcRect = ttc.getBoundingClientRect();
+
+    // Tooltip itself
+    var tip = uDom.nodeFromId('tooltip');
     tip.textContent = target.getAttribute('data-tip');
     tip.style.removeProperty('top');
     tip.style.removeProperty('bottom');
+    ttc.appendChild(tip);
+
+    // Target rect
+    var targetRect = target.getBoundingClientRect();
 
     // Default is "over"
     var pos;
     var over = target.getAttribute('data-tip-position') !== 'under';
     if ( over ) {
-        pos = document.body.getBoundingClientRect().height -
-              target.getBoundingClientRect().top;
+        pos = ttcRect.height - targetRect.top + ttcRect.top;
         tip.style.setProperty('bottom', pos + 'px');
     } else {
-        pos = target.getBoundingClientRect().bottom;
+        pos = targetRect.bottom - ttcRect.top;
         tip.style.setProperty('top', pos + 'px');
     }
 
-    uDom(tip).addClass('show');
+    tip.classList.add('show');
 };
 
 var onHideTooltip = function() {

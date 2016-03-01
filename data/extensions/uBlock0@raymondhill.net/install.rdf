@@ -2,7 +2,7 @@
 <r:RDF xmlns:r="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://www.mozilla.org/2004/em-rdf#">
     <r:Description about="urn:mozilla:install-manifest">
         <id>uBlock0@raymondhill.net</id>
-        <version>1.4.0</version>
+        <version>1.6.2</version>
         <name>uBlock Origin</name>
         <description>Finally, an efficient blocker. Easy on CPU and memory.</description>
         <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
@@ -56,6 +56,14 @@
         </r:Description></localized>
 
         <localized><r:Description>
+            <locale>cv</locale>
+            <name>uBlock Origin</name>
+            <description>Тинех Интернет тишкерӳҫӗ валли хӑвӑрт та витӗмлӗ чаркӑч пур.</description>
+            <creator>All uBlock Origin contributors</creator>
+            <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
+        </r:Description></localized>
+
+        <localized><r:Description>
             <locale>da</locale>
             <name>uBlock Origin</name>
             <description>Endelig en effektiv blocker til Chromium-baserede browsere. Lavt CPU- og hukommelsesbrug.</description>
@@ -75,6 +83,14 @@
             <locale>el</locale>
             <name>uBlock Origin</name>
             <description>Επιτέλους, ένας αποτελεσματικός blocker. Ελαφρύς για τον επεξεργαστή και τη μνήμη.</description>
+            <creator>All uBlock Origin contributors</creator>
+            <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
+        </r:Description></localized>
+
+        <localized><r:Description>
+            <locale>eo</locale>
+            <name>uBlock Origin</name>
+            <description>Finfine rendimenta reklamoblokilo. Afabla por ĉefprocesoro kaj memoro.</description>
             <creator>All uBlock Origin contributors</creator>
             <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
         </r:Description></localized>
@@ -250,7 +266,7 @@
         <localized><r:Description>
             <locale>nl</locale>
             <name>uBlock Origin</name>
-            <description>Eindelijk, een efficiënte adblocker. Gebruikt weinig processorkracht of geheugen.</description>
+            <description>Eindelijk, een efficiënte adblocker. Gebruikt weinig processorkracht en geheugen.</description>
             <creator>All uBlock Origin contributors</creator>
             <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
         </r:Description></localized>
@@ -266,7 +282,7 @@
         <localized><r:Description>
             <locale>pt-BR</locale>
             <name>uBlock Origin</name>
-            <description>Finalmente, um bloqueador eficaz. Com baixo consumo de CPU e memória.</description>
+            <description>Finalmente, um bloqueador eficiente. Com baixo uso de memória e CPU.</description>
             <creator>All uBlock Origin contributors</creator>
             <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
         </r:Description></localized>
@@ -322,7 +338,7 @@
         <localized><r:Description>
             <locale>sr</locale>
             <name>uBlock Origin</name>
-            <description>Коначно, ефикасан блокер. Ниски процесорски и меморијски захтеви.</description>
+            <description>Коначно, ефикасан блокатор. Ниски процесорски и меморијски захтеви.</description>
             <creator>All uBlock Origin contributors</creator>
             <homepageURL>https://github.com/gorhill/uBlock</homepageURL>
         </r:Description></localized>
@@ -396,7 +412,7 @@
             <r:Description>
                 <id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</id>
                 <minVersion>24.0</minVersion>
-                <maxVersion>44.*</maxVersion>
+                <maxVersion>46.0</maxVersion>
             </r:Description>
         </targetApplication>
 
@@ -405,7 +421,7 @@
             <r:Description>
                 <id>{aa3c5121-dab2-40e2-81ca-7ea25febc110}</id>
                 <minVersion>24.0</minVersion>
-                <maxVersion>41.*</maxVersion>
+                <maxVersion>42.*</maxVersion>
             </r:Description>
         </targetApplication>
 

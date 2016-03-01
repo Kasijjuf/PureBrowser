@@ -40,7 +40,8 @@ var switchBitOffsets = {
        'no-strict-blocking': 0,
                 'no-popups': 2,
     'no-cosmetic-filtering': 4,
-          'no-remote-fonts': 6
+          'no-remote-fonts': 6,
+           'no-large-media': 8
 };
 
 var fromLegacySwitchNames = {
@@ -80,7 +81,7 @@ var isIPAddress = function(hostname) {
     if ( reIPv4VeryCoarse.test(hostname) ) {
         return true;
     }
-    return hostname.charAt(0) === '[';
+    return hostname.startsWith('[');
 };
 
 /******************************************************************************/
@@ -177,7 +178,7 @@ HnSwitches.prototype.toggleBranchZ = function(switchName, targetHostname, newSta
         if ( hostname.length <= targetLen ) {
             continue;
         }
-        if ( hostname.slice(-targetLen) !== targetHostname ) {
+        if ( hostname.endsWith(targetHostname) === false ) {
             continue;
         }
         if ( hostname.charAt(hostname.length - targetLen - 1) !== '.' ) {

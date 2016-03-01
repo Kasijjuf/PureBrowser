@@ -19,8 +19,6 @@
     Home: https://github.com/gorhill/uBlock
 */
 
-/* global µBlock */
-
 /******************************************************************************/
 
 µBlock.redirectEngine = (function(){
@@ -42,48 +40,42 @@ var toBroaderHostname = function(hostname) {
 
 var RedirectEntry = function() {
     this.mime = '';
-    this.encoded = false;
-    this.ph = false;
     this.data = '';
 };
 
 /******************************************************************************/
 
-RedirectEntry.rePlaceHolders = /\{\{.+?\}\}/;
-RedirectEntry.reRequestURL = /\{\{requestURL\}\}/g;
+RedirectEntry.prototype.toURL = function() {
+    if ( this.data.startsWith('data:') === false ) {
+        if ( this.mime.indexOf(';') === -1 ) {
+            this.data = 'data:' + this.mime + ';base64,' + btoa(this.data);
+        } else {
+            this.data = 'data:' + this.mime + ',' + this.data;
+        }
+    }
+    return this.data;
+};
 
 /******************************************************************************/
 
-RedirectEntry.prototype.toURL = function(requestURL) {
-    if ( this.ph === false ) {
-        return this.data;
+RedirectEntry.prototype.toContent = function() {
+    if ( this.data.startsWith('data:') ) {
+        var pos = this.data.indexOf(',');
+        var base64 = this.data.endsWith(';base64', pos);
+        this.data = this.data.slice(pos + 1);
+        if ( base64 ) {
+            this.data = atob(this.data);
+        }
     }
-    return 'data:' +
-           this.mime + ';base64,' +
-           btoa(this.data.replace(RedirectEntry.reRequestURL, requestURL));
+    return this.data;
 };
 
 /******************************************************************************/
 
 RedirectEntry.fromFields = function(mime, lines) {
     var r = new RedirectEntry();
-
     r.mime = mime;
-    r.encoded = mime.indexOf(';') !== -1;
-    var data = lines.join(r.encoded ? '' : '\n');
-    // check for placeholders.
-    r.ph = r.encoded === false && RedirectEntry.rePlaceHolders.test(data);
-    if ( r.ph ) {
-        r.data = data;
-    } else {
-        r.data = 
-            'data:' +
-            mime +
-            (r.encoded ? '' : ';base64') +
-            ',' +
-            (r.encoded ? data : btoa(data));
-    }
-
+    r.data = lines.join(mime.indexOf(';') !== -1 ? '' : '\n');
     return r;
 };
 
@@ -91,12 +83,8 @@ RedirectEntry.fromFields = function(mime, lines) {
 
 RedirectEntry.fromSelfie = function(selfie) {
     var r = new RedirectEntry();
-
     r.mime = selfie.mime;
-    r.encoded = selfie.encoded;
-    r.ph = selfie.ph;
     r.data = selfie.data;
-
     return r;
 };
 
@@ -106,6 +94,7 @@ RedirectEntry.fromSelfie = function(selfie) {
 var RedirectEngine = function() {
     this.resources = Object.create(null);
     this.reset();
+    this.resourceNameRegister = '';
 };
 
 /******************************************************************************/
@@ -129,19 +118,21 @@ RedirectEngine.prototype.lookup = function(context) {
     var src, des = context.requestHostname,
         srcHostname = context.pageHostname,
         reqURL = context.requestURL,
-        desEntry, entries, i, entry;
+        desEntry, rules, rule, pattern;
     for (;;) {
         desEntry = typeEntry[des];
         if ( desEntry !== undefined ) {
             src = srcHostname;
             for (;;) {
-                entries = desEntry[src];
-                if ( entries !== undefined ) {
-                    i = entries.length;
-                    while ( i-- ) {
-                        entry = entries[i];
-                        if ( entry.c.test(reqURL) ) {
-                            return entry.r;
+                rules = desEntry[src];
+                if ( rules !== undefined ) {
+                    for ( rule in rules ) {
+                        pattern = rules[rule];
+                        if ( pattern instanceof RegExp === false ) {
+                            pattern = rules[rule] = new RegExp(pattern, 'i');
+                        }
+                        if ( pattern.test(reqURL) ) {
+                            return (this.resourceNameRegister = rule);
                         }
                     }
                 }
@@ -167,7 +158,7 @@ RedirectEngine.prototype.toURL = function(context) {
     }
     var entry = this.resources[token];
     if ( entry !== undefined ) {
-        return entry.toURL(context.requestURL);
+        return entry.toURL();
     }
 };
 
@@ -189,14 +180,29 @@ RedirectEngine.prototype.addRule = function(src, des, type, pattern, redirect) {
     if ( desEntry === undefined ) {
         desEntry = typeEntry[des] = Object.create(null);
     }
-    var ruleEntries = desEntry[src];
-    if ( ruleEntries === undefined ) {
-        ruleEntries = desEntry[src] = [];
+    var rules = desEntry[src];
+    if ( rules === undefined ) {
+        rules = desEntry[src] = Object.create(null);
     }
-    ruleEntries.push({
-        c: new RegExp(pattern),
-        r: redirect
-    });
+    var p = rules[redirect];
+    if ( p === undefined ) {
+        rules[redirect] = pattern;
+        return;
+    }
+    if ( p instanceof RegExp ) {
+        p = p.source;
+    }
+    // Duplicate?
+    var pos = p.indexOf(pattern);
+    if ( pos !== -1 ) {
+        if ( pos === 0 || p.charAt(pos - 1) === '|' ) {
+            pos += pattern.length;
+            if ( pos === p.length || p.charAt(pos) === '|' ) {
+                return;
+            }
+        }
+    }
+    rules[redirect] = p + '|' + pattern;
 };
 
 /******************************************************************************/
@@ -217,22 +223,25 @@ RedirectEngine.prototype.compileRuleFromStaticFilter = function(line) {
         return;
     }
 
-    var pattern = (matches[1] + matches[2]).replace(/[.+?{}()|[\]\\]/g, '\\$&')
-                                           .replace(/\^/g, '[^\\w\\d%-]')
-                                           .replace(/\*/g, '.*?');
-
-    var des = matches[1];
+    var des = matches[1] || '';
+    var pattern = (des + matches[2]).replace(/[.+?{}()|[\]\/\\]/g, '\\$&')
+                                    .replace(/\^/g, '[^\\w\\d%-]')
+                                    .replace(/\*/g, '.*?');
     var type;
     var redirect = '';
     var srcs = [];
     var options = matches[3].split(','), option;
     while ( (option = options.pop()) ) {
-        if ( option.lastIndexOf('redirect=', 0) === 0 ) {
+        if ( option.startsWith('redirect=') ) {
             redirect = option.slice(9);
             continue;
         }
-        if ( option.lastIndexOf('domain=', 0) === 0 ) {
+        if ( option.startsWith('domain=') ) {
             srcs = option.slice(7).split('|');
+            continue;
+        }
+        if ( option === 'first-party' ) {
+            srcs.push(des);
             continue;
         }
         // One and only one type must be specified.
@@ -251,7 +260,7 @@ RedirectEngine.prototype.compileRuleFromStaticFilter = function(line) {
     }
 
     // Need one single type -- not negated.
-    if ( type === undefined || type.charAt(0) === '~' ) {
+    if ( type === undefined || type.startsWith('~') ) {
         return;
     }
 
@@ -270,11 +279,7 @@ RedirectEngine.prototype.compileRuleFromStaticFilter = function(line) {
         if ( src === '' ) {
             continue;
         }
-        if ( src.charAt(0) === '~' ) {
-            continue;
-        }
-        // Need at least one specific src or des.
-        if ( src === '*' && des === '*' ) {
+        if ( src.startsWith('~') ) {
             continue;
         }
         out.push(src + '\t' + des + '\t' + type + '\t' + pattern + '\t' + redirect);
@@ -285,7 +290,7 @@ RedirectEngine.prototype.compileRuleFromStaticFilter = function(line) {
 
 /******************************************************************************/
 
-RedirectEngine.prototype.reFilterParser = /^\|\|([^\/?#^*]+)([^$]+)\$([^$]+)$/;
+RedirectEngine.prototype.reFilterParser = /^(?:\|\|([^\/?#^*]+)|\*)([^$]+)\$([^$]+)$/;
 
 RedirectEngine.prototype.supportedTypes = (function() {
     var types = Object.create(null);
@@ -307,21 +312,24 @@ RedirectEngine.prototype.toSelfie = function() {
         rules: []
     };
 
-    var typeEntry, desEntry, entries, entry;
+    var typeEntry, desEntry, rules, pattern;
     for ( var type in this.rules ) {
         typeEntry = this.rules[type];
         for ( var des in typeEntry ) {
             desEntry = typeEntry[des];
             for ( var src in desEntry ) {
-                entries = desEntry[src];
-                for ( var i = 0; i < entries.length; i++ ) {
-                    entry = entries[i];
+                rules = desEntry[src];
+                for ( var rule in rules ) {
+                    pattern = rules[rule];
+                    if ( pattern instanceof RegExp ) {
+                        pattern = pattern.source;
+                    }
                     r.rules.push(
                         src + '\t' +
                         des + '\t' +
                         type + '\t' +
-                        entry.c.source + '\t' +
-                        entry.r
+                        pattern + '\t' +
+                        rule
                     );
                 }
             }
@@ -355,6 +363,24 @@ RedirectEngine.prototype.fromSelfie = function(selfie) {
 
 /******************************************************************************/
 
+RedirectEngine.prototype.resourceURIFromName = function(name, mime) {
+    var entry = this.resources[name];
+    if ( entry && (mime === undefined || entry.mime.startsWith(mime)) ) {
+        return entry.toURL();
+    }
+};
+
+/******************************************************************************/
+
+RedirectEngine.prototype.resourceContentFromName = function(name, mime) {
+    var entry = this.resources[name];
+    if ( entry && (mime === undefined || entry.mime.startsWith(mime)) ) {
+        return entry.toContent();
+    }
+};
+
+/******************************************************************************/
+
 // TODO: combine same key-redirect pairs into a single regex.
 
 RedirectEngine.prototype.resourcesFromString = function(text) {
@@ -376,7 +402,7 @@ RedirectEngine.prototype.resourcesFromString = function(text) {
         line = text.slice(lineBeg, lineEnd);
         lineBeg = lineEnd + 1;
 
-        if ( line.charAt(0) === '#' ) {
+        if ( line.startsWith('#') ) {
             continue;
         }
 

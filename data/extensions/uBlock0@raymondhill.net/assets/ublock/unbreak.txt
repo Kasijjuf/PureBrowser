@@ -9,17 +9,24 @@
 
 # From Chrome store: "Go to site http://www.vd.nl/ ... links from dropdown top menu do not work"
 # To counter Dan Pollock's, hpHosts, MVPS, Peter Lowe's
-@@||google-analytics.com/analytics.js$script,domain=www.vd.nl
-@@||google-analytics.com/plugins/ua/ec.js$script,domain=www.vd.nl
+@@||google-analytics.com/analytics.js$script,domain=burodecredito.com.mx|vd.nl
+
+# https://github.com/gorhill/uBlock/issues/1164
+# GA plugins are pulled if and only if `analytics.js` was already allowed in
+# the first place: it is thus safe to create a global exception filter for
+# all GA plugins.
+@@||google-analytics.com/plugins/$script
 
 # https://github.com/gorhill/uBlock/issues/1020
-@@||www.google-analytics.com/ga.js$script,domain=www.tv2.no
+@@||www.google-analytics.com/ga.js$script,domain=santander.com.mx|tv2.no
 
 # https://github.com/gorhill/uBlock/issues/939
 @@||google-analytics.com/urchin.js$script,domain=live.euroleague.net
 
 # https://github.com/chrisaljoudi/uBlock/issues/63
 @@||adf.ly^$~third-party
+# https://github.com/gorhill/uBlock/issues/1131
+@@||adf.ly^$domain=j.gs
 
 # https://github.com/chrisaljoudi/uBlock/issues/69
 @@||widget-cdn.rpxnow.com^$domain=foxnews.com,script
@@ -234,3 +241,28 @@ marketwatch.com#@#.advertisement
 
 # As reported in AMO feedback section
 @@||nationalreview.com/sites/all/themes/*/assets/js/chartbeat.js$script
+
+# https://github.com/gorhill/uBlock/issues/1016#issuecomment-165153899
+@@||liveperson.net^$first-party
+
+# https://github.com/gorhill/uBlock/issues/1082
+@@||widgets.outbrain.com/outbrain.js$script,domain=www.themarker.com
+
+# https://github.com/gorhill/uBlock/issues/1081
+@@||google-analytics.com/ga.js$domain=one.co.il
+
+# https://github.com/gorhill/uBlock/issues/1297
+@@||taboola.com^$first-party
+
+# https://github.com/gorhill/uBlock/issues/1296
+@@||odb.outbrain.com/crossdomain.xml$object-subrequest
+
+# https://twitter.com/SeanHood/status/692387495993024512
+# To counter `207.net` in Peter Lowe's, Disconnect‎'s Malvertising filter list
+@@||ticketmaster.122.2o7.net$image,domain=ticketweb.co.uk
+
+# https://forums.lanik.us/viewtopic.php?f=64&t=28590
+phoronix.com#@#div[style^="text-align: center;"]
+
+# https://forums.lanik.us/viewtopic.php?f=64&t=28701
+@@||files.explosm.net/files/$image,first-party

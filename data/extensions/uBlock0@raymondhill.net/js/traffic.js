@@ -38,9 +38,6 @@ var exports = {};
 // Intercept and filter web requests.
 
 var onBeforeRequest = function(details) {
-    //console.debug('µBlock.webRequest/onBeforeRequest(): "%s": %o', details.url, details);
-    //console.debug('µBlock.webRequest/onBeforeRequest(): "type=%s, id=%d, parent id=%d, url=%s', details.type, details.frameId, details.parentFrameId, details.url);
-
     // Special handling for root document.
     // https://github.com/chrisaljoudi/uBlock/issues/1001
     // This must be executed regardless of whether the request is
@@ -84,7 +81,7 @@ var onBeforeRequest = function(details) {
     // Setup context and evaluate
     var requestURL = details.url;
     requestContext.requestURL = requestURL;
-    requestContext.requestHostname = details.hostname;
+    requestContext.requestHostname = µb.URI.hostnameFromURI(requestURL);
     requestContext.requestType = requestType;
 
     var result = pageStore.filterRequest(requestContext);
@@ -107,23 +104,15 @@ var onBeforeRequest = function(details) {
 
     // Not blocked
     if ( µb.isAllowResult(result) ) {
-        //console.debug('traffic.js > onBeforeRequest(): ALLOW "%s" (%o) because "%s"', details.url, details, result);
-
         // https://github.com/chrisaljoudi/uBlock/issues/114
         frameId = details.frameId;
-        if ( frameId > 0 ) {
-            if ( isFrame  ) {
-                pageStore.setFrame(frameId, requestURL);
-            } else if ( pageStore.getFrame(frameId) === null ) {
-                pageStore.setFrame(frameId, requestURL);
-            }
+        if ( frameId > 0 && isFrame ) {
+            pageStore.setFrame(frameId, requestURL);
         }
-
         return;
     }
 
     // Blocked
-    //console.debug('traffic.js > onBeforeRequest(): BLOCK "%s" (%o) because "%s"', details.url, details, result);
 
     // https://github.com/chrisaljoudi/uBlock/issues/905#issuecomment-76543649
     // No point updating the badge if it's not being displayed.
@@ -135,6 +124,17 @@ var onBeforeRequest = function(details) {
     // Redirect blocked request?
     var url = µb.redirectEngine.toURL(requestContext);
     if ( url !== undefined ) {
+        if ( µb.logger.isEnabled() ) {
+            µb.logger.writeOne(
+                tabId,
+                'redirect',
+                'rr:' + µb.redirectEngine.resourceNameRegister,
+                requestType,
+                requestURL,
+                requestContext.rootHostname,
+                requestContext.pageHostname
+            );
+        }
         return { redirectUrl: url };
     }
 
@@ -154,8 +154,9 @@ var onBeforeRootFrameRequest = function(details) {
     // https://github.com/chrisaljoudi/uBlock/issues/1001
     // This must be executed regardless of whether the request is
     // behind-the-scene
-    var requestHostname = details.hostname;
-    var requestDomain = µb.URI.domainFromHostname(requestHostname) || requestHostname;
+    var µburi = µb.URI;
+    var requestHostname = µburi.hostnameFromURI(requestURL);
+    var requestDomain = µburi.domainFromHostname(requestHostname) || requestHostname;
     var context = {
         rootHostname: requestHostname,
         rootDomain: requestDomain,
@@ -275,8 +276,6 @@ var toBlockDocResult = function(url, hostname, result) {
 // Intercept and filter behind-the-scene requests.
 
 var onBeforeBehindTheSceneRequest = function(details) {
-    //console.debug('traffic.js > onBeforeBehindTheSceneRequest(): "%s": %o', details.url, details);
-
     var µb = µBlock;
     var pageStore = µb.pageStoreFromTabId(vAPI.noTabId);
     if ( !pageStore ) {
@@ -284,8 +283,9 @@ var onBeforeBehindTheSceneRequest = function(details) {
     }
 
     var context = pageStore.createContextFromPage();
-    context.requestURL = details.url;
-    context.requestHostname = details.hostname;
+    var requestURL = details.url;
+    context.requestURL = requestURL;
+    context.requestHostname = µb.URI.hostnameFromURI(requestURL);
     context.requestType = details.type;
 
     // Blocking behind-the-scene requests can break a lot of stuff: prevent
@@ -305,7 +305,7 @@ var onBeforeBehindTheSceneRequest = function(details) {
             'net',
             result,
             details.type,
-            details.url,
+            requestURL,
             context.rootHostname,
             context.rootHostname
         );
@@ -313,19 +313,18 @@ var onBeforeBehindTheSceneRequest = function(details) {
 
     // Not blocked
     if ( µb.isAllowResult(result) ) {
-        //console.debug('traffic.js > onBeforeBehindTheSceneRequest(): ALLOW "%s" (%o) because "%s"', details.url, details, result);
         return;
     }
 
     // Blocked
-    //console.debug('traffic.js > onBeforeBehindTheSceneRequest(): BLOCK "%s" (%o) because "%s"', details.url, details, result);
-
     return { 'cancel': true };
 };
 
 /******************************************************************************/
 
-// To handle `inline-script`.
+// To handle:
+// - inline script tags
+// - media elements larger than n kB
 
 var onHeadersReceived = function(details) {
     // Do not interfere with behind-the-scene requests.
@@ -343,6 +342,10 @@ var onHeadersReceived = function(details) {
     if ( requestType === 'sub_frame' ) {
         return onFrameHeadersReceived(details);
     }
+
+    if ( requestType === 'image' || requestType === 'media' ) {
+        return foilLargeMediaElement(details);
+    }
 };
 
 /******************************************************************************/
@@ -350,8 +353,9 @@ var onHeadersReceived = function(details) {
 var onRootFrameHeadersReceived = function(details) {
     var µb = µBlock;
     var tabId = details.tabId;
+    var requestURL = details.url;
 
-    µb.tabContextManager.push(tabId, details.url);
+    µb.tabContextManager.push(tabId, requestURL);
 
     // Lookup the page store associated with this tab id.
     var pageStore = µb.pageStoreFromTabId(tabId);
@@ -361,8 +365,8 @@ var onRootFrameHeadersReceived = function(details) {
     // I can't think of how pageStore could be null at this point.
 
     var context = pageStore.createContextFromPage();
-    context.requestURL = details.url;
-    context.requestHostname = details.hostname;
+    context.requestURL = requestURL;
+    context.requestHostname = µb.URI.hostnameFromURI(requestURL);
     context.requestType = 'inline-script';
 
     var result = pageStore.filterRequestNoCache(context);
@@ -375,7 +379,7 @@ var onRootFrameHeadersReceived = function(details) {
             'net',
             result,
             'inline-script',
-            details.url,
+            requestURL,
             context.rootHostname,
             context.pageHostname
         );
@@ -406,8 +410,9 @@ var onFrameHeadersReceived = function(details) {
     // Frame id of frame request is their own id, while the request is made
     // in the context of the parent.
     var context = pageStore.createContextFromFrameId(details.parentFrameId);
-    context.requestURL = details.url;
-    context.requestHostname = details.hostname;
+    var requestURL = details.url;
+    context.requestURL = requestURL;
+    context.requestHostname = µb.URI.hostnameFromURI(requestURL);
     context.requestType = 'inline-script';
 
     var result = pageStore.filterRequestNoCache(context);
@@ -420,7 +425,7 @@ var onFrameHeadersReceived = function(details) {
             'net',
             result,
             'inline-script',
-            details.url,
+            requestURL,
             context.rootHostname,
             context.pageHostname
         );
@@ -434,6 +439,53 @@ var onFrameHeadersReceived = function(details) {
     µb.updateBadgeAsync(tabId);
 
     return { 'responseHeaders': foilInlineScripts(details.responseHeaders) };
+};
+
+/******************************************************************************/
+
+// https://github.com/gorhill/uBlock/issues/1163
+// "Block elements by size"
+
+var foilLargeMediaElement = function(details) {
+    var µb = µBlock;
+    var tabId = details.tabId;
+    var pageStore = µb.pageStoreFromTabId(tabId);
+    if ( pageStore === null ) {
+        return;
+    }
+    if ( pageStore.getNetFilteringSwitch() !== true ) {
+        return;
+    }
+    if ( Date.now() < pageStore.allowLargeMediaElementsUntil ) {
+        return;
+    }
+    if ( µb.hnSwitches.evaluateZ('no-large-media', pageStore.tabHostname) !== true ) {
+        return;
+    }
+    var i = headerIndexFromName('content-length', details.responseHeaders);
+    if ( i === -1 ) {
+        return;
+    }
+    var contentLength = parseInt(details.responseHeaders[i].value, 10) || 0;
+    if ( (contentLength >>> 10) < µb.userSettings.largeMediaSize ) {
+        return;
+    }
+
+    pageStore.logLargeMedia();
+
+    if ( µb.logger.isEnabled() ) {
+        µb.logger.writeOne(
+            tabId,
+            'net',
+            µb.hnSwitches.toResultString(),
+            details.type,
+            details.url,
+            pageStore.tabHostname,
+            pageStore.tabHostname
+        );
+    }
+
+    return { cancel: true };
 };
 
 /******************************************************************************/
@@ -556,8 +608,10 @@ vAPI.net.onHeadersReceived = {
         'https://*/*'
     ],
     types: [
-        "main_frame",
-        "sub_frame"
+        'main_frame',
+        'sub_frame',
+        'image',
+        'media'
     ],
     extra: [ 'blocking', 'responseHeaders' ],
     callback: onHeadersReceived

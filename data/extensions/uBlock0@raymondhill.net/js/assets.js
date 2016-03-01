@@ -54,7 +54,7 @@ var oneDay = 24 * oneHour;
 
 var projectRepositoryRoot = µBlock.projectServerRoot;
 var nullFunc = function() {};
-var reIsExternalPath = /^(file|ftps?|https?):\/\//;
+var reIsExternalPath = /^(file|ftps?|https?|resource):\/\//;
 var reIsUserPath = /^assets\/user\//;
 var reIsCachePath = /^cache:\/\//;
 var lastRepoMetaTimestamp = 0;
@@ -312,7 +312,7 @@ var getTextFileFromURL = function(url, onLoad, onError) {
         // appears to be a HTML document: could happen when server serves
         // some kind of error page I suppose
         var text = this.responseText.trim();
-        if ( text.charAt(0) === '<' && text.slice(-1) === '>' ) {
+        if ( text.startsWith('<') && text.endsWith('>') ) {
             return onError.call(this);
         }
         return onLoad.call(this);

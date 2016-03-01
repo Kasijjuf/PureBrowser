@@ -125,7 +125,7 @@
             // https://github.com/gorhill/uBlock/issues/277
             // uBlock's filter lists are always enabled by default, so we
             // have to include in backup only those which are turned off.
-            if ( path.lastIndexOf('assets/ublock/', 0) === 0 ) {
+            if ( path.startsWith('assets/ublock/') ) {
                 if ( entry.off !== true ) {
                     delete result[path];
                 }
@@ -181,7 +181,7 @@
         var cfe = µb.cosmeticFilteringEngine;
         var acceptedCount = snfe.acceptedCount + cfe.acceptedCount;
         var duplicateCount = snfe.duplicateCount + cfe.duplicateCount;
-        µb.applyCompiledFilters(compiledFilters);
+        µb.applyCompiledFilters(compiledFilters, true);
         var entry = µb.remoteBlacklists[µb.userFiltersPath];
         var deltaEntryCount = snfe.acceptedCount + cfe.acceptedCount - acceptedCount;
         var deltaEntryUsedCount = deltaEntryCount - (snfe.duplicateCount + cfe.duplicateCount - duplicateCount);
@@ -269,6 +269,12 @@
                 availableEntry.title = storedEntry.title;
             }
         }
+
+        // https://github.com/gorhill/uBlock/issues/747
+        if ( µb.firstInstall ) {
+            µb.autoSelectFilterLists(availableLists);
+        }
+
         callback(availableLists);
     };
 
@@ -338,6 +344,25 @@
 
 /******************************************************************************/
 
+µBlock.autoSelectFilterLists = function(lists) {
+    var lang = self.navigator.language.slice(0, 2),
+        list;
+    for ( var path in lists ) {
+        if ( lists.hasOwnProperty(path) === false ) {
+            continue;
+        }
+        list = lists[path];
+        if ( list.off !== true ) {
+            continue;
+        }
+        if ( list.lang === lang ) {
+            list.off = false;
+        }
+    }
+};
+
+/******************************************************************************/
+
 µBlock.createShortUniqueId = function(path) {
     var md5 = YaMD5.hashStr(path);
     return md5.slice(0, 4) + md5.slice(-4);
@@ -347,7 +372,15 @@
 
 /******************************************************************************/
 
+// This is used to be re-entrancy resistant.
+µBlock.loadingFilterLists = false;
+
 µBlock.loadFilterLists = function(callback) {
+    // Callers are expected to check this first.
+    if ( this.loadingFilterLists ) {
+        return;
+    }
+    this.loadingFilterLists = true;
 
     //quickProfiler.start('µBlock.loadFilterLists()');
 
@@ -377,6 +410,7 @@
         callback();
 
         µb.selfieManager.create();
+        µb.loadingFilterLists = false;
     };
 
     var applyCompiledFilters = function(path, compiled) {
@@ -384,7 +418,7 @@
         var cfe = µb.cosmeticFilteringEngine;
         var acceptedCount = snfe.acceptedCount + cfe.acceptedCount;
         var duplicateCount = snfe.duplicateCount + cfe.duplicateCount;
-        µb.applyCompiledFilters(compiled);
+        µb.applyCompiledFilters(compiled, path === µb.userFiltersPath);
         if ( µb.remoteBlacklists.hasOwnProperty(path) ) {
             var entry = µb.remoteBlacklists[path];
             entry.entryCount = snfe.acceptedCount + cfe.acceptedCount - acceptedCount;
@@ -425,8 +459,7 @@
         }
         filterlistsCount = toLoad.length;
         if ( filterlistsCount === 0 ) {
-            onDone();
-            return;
+            return onDone();
         }
 
         var i = toLoad.length;
@@ -436,6 +469,7 @@
     };
 
     this.getAvailableLists(onFilterListsReady);
+    this.loadRedirectResources();
 };
 
 /******************************************************************************/
@@ -458,7 +492,7 @@
         var listMeta = µb.remoteBlacklists[path];
         // https://github.com/gorhill/uBlock/issues/313
         // Always try to fetch the name if this is an external filter list.
-        if ( listMeta && listMeta.title === '' || /^https?:/.test(path) ) {
+        if ( listMeta && (listMeta.title === '' || listMeta.group === 'custom') ) {
             var matches = details.content.slice(0, 1024).match(/(?:^|\n)!\s*Title:([^\n]+)/i);
             if ( matches !== null ) {
                 listMeta.title = matches[1].trim();
@@ -593,8 +627,12 @@
 
 /******************************************************************************/
 
-µBlock.applyCompiledFilters = function(rawText) {
-    var skipCosmetic = !this.userSettings.parseAllABPHideFilters;
+// https://github.com/gorhill/uBlock/issues/1395
+//   Added `firstparty` argument: to avoid discarding cosmetic filters when
+//   applying 1st-party filters.
+
+µBlock.applyCompiledFilters = function(rawText, firstparty) {
+    var skipCosmetic = !firstparty && !this.userSettings.parseAllABPHideFilters;
     var staticNetFilteringEngine = this.staticNetFilteringEngine;
     var cosmeticFilteringEngine = this.cosmeticFilteringEngine;
     var lineBeg = 0;
@@ -643,6 +681,8 @@
     var µb = this;
 
     // We are just reloading the filter lists: we do not want assets to update.
+    // TODO: probably not needed anymore, since filter lists are now always
+    // loaded without update => see `µb.assets.remoteFetchBarrier`.
     this.assets.autoUpdate = false;
 
     var onFiltersReady = function() {
@@ -668,7 +708,7 @@
         callback();
     };
 
-    this.assets.get('assets/ublock/redirect-resources.txt', onResourcesLoaded);
+    this.assets.get('assets/ublock/resources.txt', onResourcesLoaded);
 };
 
 /******************************************************************************/
@@ -828,7 +868,7 @@
         }
 
         if ( typeof data.userFilters === 'string' ) {
-            µb.assets.put('assets/user/filters.txt', data.userFilters);
+            µb.assets.put(µb.userFiltersPath, data.userFilters);
         }
 
         callback();
@@ -853,7 +893,7 @@
             assets[location] = true;
         }
         assets[µb.pslPath] = true;
-        assets['assets/ublock/redirect-resources.txt'] = true;
+        assets['assets/ublock/resources.txt'] = true;
         callback(assets);
     };
 
@@ -888,10 +928,6 @@
     // Assets are supposed to have been all updated, prevent fetching from
     // remote servers.
     µb.assets.remoteFetchBarrier += 1;
-
-    if ( details.hasOwnProperty('assets/ublock/redirect-resources.txt') ) {
-        µb.loadRedirectResources();
-    }
 
     var onFiltersReady = function() {
         µb.assets.remoteFetchBarrier -= 1;

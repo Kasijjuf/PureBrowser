@@ -47,9 +47,12 @@ var defaultExternalLists = [
 /******************************************************************************/
 
 return {
+    firstInstall: false,
+
     userSettings: {
         advancedUserEnabled: false,
         autoUpdate: true,
+        cloudStorageEnabled: false,
         collapseBlocked: true,
         colorBlindFriendly: false,
         contextMenuEnabled: true,
@@ -58,11 +61,12 @@ return {
         externalLists: defaultExternalLists,
         firewallPaneMinimized: true,
         hyperlinkAuditingDisabled: true,
+        largeMediaSize: 50,
         parseAllABPHideFilters: true,
         prefetchingDisabled: true,
         requestLogMaxEntries: 1000,
         showIconBadge: true,
-        cloudStorageEnabled: false,
+        tooltipsDisabled: false,
         webrtcIPAddressHidden: false
     },
 
@@ -89,8 +93,8 @@ return {
 
     // read-only
     systemSettings: {
-        compiledMagic: 'cxubjrcfrnrq',
-        selfieMagic: 'mnigwksyvgkv'
+        compiledMagic: 'xtsldiywhvgc',
+        selfieMagic: 'xtsldiywhvgc'
     },
 
     restoreBackupSettings: {
@@ -124,10 +128,6 @@ return {
         },
         'assets/ublock/unbreak.txt': {
             title: 'uBlock filters – Unbreak',
-            group: 'default'
-        },
-        'assets/ublock/redirect.txt': {
-            title: 'uBlock filters – Block-then-redirect',
             group: 'default'
         },
         'assets/ublock/badware.txt': {
@@ -165,7 +165,7 @@ return {
         "assets/thirdparties/gitorious.org/adblock-latvian/adblock-latvian/raw/master_lists/latvian-list.txt": "https://notabug.org/latvian-list/adblock-latvian/raw/master/lists/latvian-list.txt",
         "assets/thirdparties/home.fredfiber.no/langsholt/adblock.txt": "http://home.fredfiber.no/langsholt/adblock.txt",
         "assets/thirdparties/hosts-file.net/ad-servers": "http://hosts-file.net/.%5Cad_servers.txt",
-        "assets/thirdparties/http://www.certyficate.it/adblock/adblock.txt": "https://www.certyficate.it/adblock/adblock.txt",
+        "assets/thirdparties/http://www.certyficate.it/adblock/adblock.txt": "https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-adblock-filters/adblock.txt",
         "assets/thirdparties/liste-ar-adblock.googlecode.com/hg/Liste_AR.txt": "https://liste-ar-adblock.googlecode.com/hg/Liste_AR.txt",
         "assets/thirdparties/margevicius.lt/easylistlithuania.txt": "http://margevicius.lt/easylistlithuania.txt",
         "assets/thirdparties/mirror1.malwaredomains.com/files/immortal_domains.txt": "http://malwaredomains.lehigh.edu/files/immortal_domains.txt",
@@ -186,7 +186,9 @@ return {
         "assets/thirdparties/www.fanboy.co.nz/fanboy-vietnam.txt": "https://www.fanboy.co.nz/fanboy-vietnam.txt",
         "assets/thirdparties/www.void.gr/kargig/void-gr-filters.txt": "https://www.void.gr/kargig/void-gr-filters.txt",
         "assets/thirdparties/www.zoso.ro/pages/rolist.txt": "",
-        "https://iadb.azurewebsites.net/Finland_adb.txt": "http://adb.juvander.net/Finland_adb.txt"
+        "https://iadb.azurewebsites.net/Finland_adb.txt": "http://adb.juvander.net/Finland_adb.txt",
+        "https://www.certyficate.it/adblock/adblock.txt": "https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-adblock-filters/adblock.txt",
+        "https://raw.githubusercontent.com/heradhis/indonesianadblockrules/master/subscriptions/abpindo.txt": "https://raw.githubusercontent.com/ABPindo/indonesianadblockrules/master/subscriptions/abpindo.txt"
     },
 
     selfieAfter: 23 * oneMinute,

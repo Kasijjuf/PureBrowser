@@ -19,8 +19,6 @@
     Home: https://github.com/gorhill/uBlock
 */
 
-/* global vAPI, HTMLDocument, XMLDocument */
-
 /******************************************************************************/
 
 // Injected into content pages
@@ -30,18 +28,6 @@
 'use strict';
 
 /******************************************************************************/
-
-// https://github.com/chrisaljoudi/uBlock/issues/464
-if ( document instanceof HTMLDocument === false ) {
-    // https://github.com/chrisaljoudi/uBlock/issues/1528
-    // A XMLDocument can be a valid HTML document.
-    if (
-        document instanceof XMLDocument === false ||
-        document.createElement('div') instanceof HTMLDivElement === false
-    ) {
-        return;
-    }
-}
 
 // I've seen this happens on Firefox
 if ( window.location === null ) {
@@ -87,11 +73,10 @@ var uBlockCollapser = (function() {
     var timer = null;
     var requestId = 1;
     var newRequests = [];
-    var pendingRequests = {};
+    var pendingRequests = Object.create(null);
     var pendingRequestCount = 0;
     var src1stProps = {
         'embed': 'src',
-        'iframe': 'src',
         'img': 'src',
         'object': 'data'
     };
@@ -133,10 +118,10 @@ var uBlockCollapser = (function() {
         var request, entry, target, value;
         while ( i-- ) {
             request = requests[i];
-            if ( pendingRequests.hasOwnProperty(request.id) === false ) {
+            entry = pendingRequests[request.id];
+            if ( entry === undefined ) {
                 continue;
             }
-            entry = pendingRequests[request.id];
             delete pendingRequests[request.id];
             pendingRequestCount -= 1;
 
@@ -168,7 +153,7 @@ var uBlockCollapser = (function() {
         // Renew map: I believe that even if all properties are deleted, an
         // object will still use more memory than a brand new one.
         if ( pendingRequestCount === 0 ) {
-            pendingRequests = {};
+            pendingRequests = Object.create(null);
         }
     };
 
@@ -224,6 +209,13 @@ var uBlockCollapser = (function() {
         newRequests.push(new BouncingRequest(req.id, tagName, src));
     };
 
+    var addMany = function(targets) {
+        var i = targets.length;
+        while ( i-- ) {
+            add(targets[i]);
+        }
+    };
+
     var iframeSourceModified = function(mutations) {
         var i = mutations.length;
         while ( i-- ) {
@@ -237,6 +229,18 @@ var uBlockCollapser = (function() {
         attributeFilter: [ 'src' ]
     };
 
+    var primeLocalIFrame = function(iframe) {
+        // Should probably also copy injected styles.
+        if ( vAPI.injectedScripts ) {
+            var scriptTag = document.createElement('script');
+            scriptTag.appendChild(document.createTextNode(vAPI.injectedScripts));
+            var parent = iframe.contentDocument && iframe.contentDocument.head;
+            if ( parent ) {
+                parent.appendChild(scriptTag);
+            }
+        }
+    };
+
     var addIFrame = function(iframe, dontObserve) {
         // https://github.com/gorhill/uBlock/issues/162
         // Be prepared to deal with possible change of src attribute.
@@ -246,6 +250,7 @@ var uBlockCollapser = (function() {
 
         var src = iframe.src;
         if ( src === '' || typeof src !== 'string' ) {
+            primeLocalIFrame(iframe);
             return;
         }
         if ( src.lastIndexOf('http', 0) !== 0 ) {
@@ -255,21 +260,26 @@ var uBlockCollapser = (function() {
         newRequests.push(new BouncingRequest(req.id, 'iframe', src));
     };
 
-    var iframesFromNode = function(node) {
-        if ( node.localName === 'iframe' ) {
-            addIFrame(node);
-        }
-        var iframes = node.getElementsByTagName('iframe');
+    var addIFrames = function(iframes) {
         var i = iframes.length;
         while ( i-- ) {
             addIFrame(iframes[i]);
         }
+    };
+
+    var iframesFromNode = function(node) {
+        if ( node.localName === 'iframe' ) {
+            addIFrame(node);
+        }
+        addIFrames(node.getElementsByTagName('iframe'));
         process();
     };
 
     return {
         add: add,
+        addMany: addMany,
         addIFrame: addIFrame,
+        addIFrames: addIFrames,
         iframesFromNode: iframesFromNode,
         process: process
     };
@@ -814,8 +824,10 @@ var uBlockCollapser = (function() {
     // effect on the document), and thus must be logged if needed.
     var addedNodesHandler = function() {
         addedNodeListsTimer = null;
-        var nodeList, iNode, node;
-        while ( (nodeList = addedNodeLists.pop()) ) {
+        var iNodeList = addedNodeLists.length,
+            nodeList, iNode, node;
+        while ( iNodeList-- ) {
+            nodeList = addedNodeLists[iNodeList];
             iNode = nodeList.length;
             while ( iNode-- ) {
                 node = nodeList[iNode];
@@ -829,6 +841,7 @@ var uBlockCollapser = (function() {
                 collapser.iframesFromNode(node);
             }
         }
+        addedNodeLists.length = 0;
         if ( contextNodes.length !== 0 ) {
             idsFromNodeList(selectNodes('[id]'));
             classesFromNodeList(selectNodes('[class]'));
@@ -923,45 +936,29 @@ var uBlockCollapser = (function() {
 
 (function() {
     var collapser = uBlockCollapser;
-    var elems, i, elem;
-
-    elems = document.getElementsByTagName('embed');
-    i = elems.length;
-    while ( i-- ) {
-        collapser.add(elems[i]);
-    }
-
-    elems = document.getElementsByTagName('object');
-    i = elems.length;
-    while ( i-- ) {
-        collapser.add(elems[i]);
-    }
-
-    elems = document.getElementsByTagName('img');
-    i = elems.length;
+    var elems = document.getElementsByTagName('img'),
+        i = elems.length, elem;
     while ( i-- ) {
         elem = elems[i];
         if ( elem.complete ) {
             collapser.add(elem);
         }
     }
-
-    elems = document.getElementsByTagName('iframe');
-    i = elems.length;
-    while ( i-- ) {
-        collapser.addIFrame(elems[i]);
-    }
-
+    collapser.addMany(document.getElementsByTagName('embed'));
+    collapser.addMany(document.getElementsByTagName('object'));
+    collapser.addIFrames(document.getElementsByTagName('iframe'));
     collapser.process(0);
 })();
 
 /******************************************************************************/
 /******************************************************************************/
 
-// To send mouse coordinates to context menu handler, as the chrome API fails
+// To send mouse coordinates to main process, as the chrome API fails
 // to provide the mouse position to context menu listeners.
-// This could be inserted in its own content script, but it's so simple that
-// I feel it's not worth the overhead.
+
+// https://github.com/chrisaljoudi/uBlock/issues/1143
+// Also, find a link under the mouse, to try to avoid confusing new tabs
+// as nuisance popups.
 
 // Ref.: https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu
 
