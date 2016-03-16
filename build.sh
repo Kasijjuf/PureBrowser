@@ -538,6 +538,12 @@ cat << EOF >>debian/vendor.js.in
 defaultlockPref("browser.search.defaultenginename",              "DuckDuckGo");
 EOF
 
+# Disable extension signing by Mozilla
+cat << EOF >>debian/vendor.js.in
+// Disable Mozilla extension signing check.
+defaultlockPref("xpinstall.signatures.required",	"false");
+EOF
+
 # Uncomment this to install any patches from the data/patches directory
 #for patchfile in $(ls "$basedir"/data/patches/)
 #do
