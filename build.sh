@@ -57,13 +57,13 @@ done
 
 for file in $(find . -type f|grep iceweasel)
 do
-	rename 's/iceweasel/purebrowser/' -i "$file"
+	rename 's/iceweasel/purebrowser/' "$file"
 	echo "Renaming $file"
 done
 
 for file in $(grep "ICEWEASEL" . -rl)
 do
-	sed 's/ICEWEASEL/PUREBROWSER/g' -i "$file"
+	sed 's/ICEWEASEL/PUREBROWSER/g' "$file"
 	echo "Editing $file"
 done
 
